@@ -1,0 +1,22 @@
+[Unit]
+Description=BlitzGrid 30 TPS Authoritative Real-Time Game Server
+After=network.target nginx.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/blitzgrid/server
+Environment=NODE_ENV=production
+Environment=PORT=3001
+Environment=LARAVEL_API_URL=http://127.0.0.1:80/api/game
+Environment=JWT_SECRET=blitzgrid_super_secret_jwt_key_2026
+ExecStart=/usr/bin/node src/index.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
