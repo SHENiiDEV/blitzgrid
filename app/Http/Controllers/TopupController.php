@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\TopupReceiptMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class TopupController extends Controller
@@ -61,6 +64,24 @@ class TopupController extends Controller
         } else {
             $user->increment('gems', $amount);
             $msg = "Success! {$amount} Quantum Gems infused into your core.";
+        }
+
+        // Refresh user instance to have exact updated coin/gem balances
+        $user->refresh();
+
+        // Dispatch Topup Receipt Email
+        $transactionId = 'TXN-' . strtoupper(substr(md5(uniqid((string) mt_rand(), true)), 0, 10));
+        try {
+            Mail::to($user->email)->send(new TopupReceiptMail(
+                user: $user,
+                currency: $currency,
+                amount: $amount,
+                priceUsd: $price,
+                paymentMethod: $validated['payment_method'],
+                transactionId: $transactionId
+            ));
+        } catch (\Throwable $e) {
+            Log::error('Failed sending topup receipt email to ' . $user->email . ': ' . $e->getMessage());
         }
 
         return redirect()->back()->with('success', $msg);

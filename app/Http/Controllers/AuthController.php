@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\WelcomeCadetMail;
 use App\Models\Skin;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 
@@ -121,6 +124,13 @@ class AuthController extends Controller
         $defaultSkin = Skin::where('is_default', true)->first() ?? Skin::first();
         if ($defaultSkin) {
             $user->skins()->attach($defaultSkin->id, ['is_equipped' => true]);
+        }
+
+        // Dispatch Welcome Cadet Email
+        try {
+            Mail::to($user->email)->send(new WelcomeCadetMail($user));
+        } catch (\Throwable $e) {
+            Log::error('Failed sending welcome email to ' . $user->email . ': ' . $e->getMessage());
         }
 
         Auth::login($user);
