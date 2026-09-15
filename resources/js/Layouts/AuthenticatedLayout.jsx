@@ -15,6 +15,7 @@ import {
     Zap,
     Sparkles
 } from 'lucide-react';
+import Footer from '@/Components/Footer';
 
 export default function AuthenticatedLayout({ children, title = 'Command Deck' }) {
     const { auth, flash } = usePage().props;
@@ -230,12 +231,7 @@ export default function AuthenticatedLayout({ children, title = 'Command Deck' }
             </main>
 
             {/* Footer */}
-            <footer className="border-t border-slate-900 bg-slate-950/80 py-4 text-xs font-mono text-slate-500">
-                <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-                    <div>BLITZGRID ARCHITECTURE // 30 TPS Node.js Authoritative + Laravel 13 Inertia</div>
-                    <div className="text-cyan-500/70">RADAR STATUS: ACTIVE // TICK: 30HZ</div>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 }

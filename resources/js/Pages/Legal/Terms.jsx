@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Crosshair, ArrowLeft, ShieldCheck, FileText } from 'lucide-react';
+import Footer from '@/Components/Footer';
 
 export default function Terms() {
     return (
@@ -101,6 +102,8 @@ export default function Terms() {
                     </div>
                 </div>
             </main>
+
+            <Footer />
         </div>
     );
 }

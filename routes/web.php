@@ -32,6 +32,10 @@ Route::get('/privacy', function () {
     return Inertia::render('Legal/Privacy');
 })->name('privacy');
 
+Route::get('/refund', function () {
+    return Inertia::render('Legal/Refund');
+})->name('refund');
+
 // Authentication (Guest only)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

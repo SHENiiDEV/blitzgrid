@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Crosshair, ArrowLeft, ShieldCheck, Lock } from 'lucide-react';
+import Footer from '@/Components/Footer';
 
 export default function Privacy() {
     return (
@@ -95,6 +96,8 @@ export default function Privacy() {
                     </div>
                 </div>
             </main>
+
+            <Footer />
         </div>
     );
 }

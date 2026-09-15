@@ -28,6 +28,7 @@ import {
     Menu,
     X
 } from 'lucide-react';
+import Footer from '@/Components/Footer';
 
 export default function Welcome({ skins = [], topCommanders = [], isAuthenticated = false }) {
     const [selectedSkinIndex, setSelectedSkinIndex] = useState(0);
@@ -942,22 +943,7 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
             </section>
 
             {/* FOOTER */}
-            <footer className="border-t border-slate-900 bg-slate-950 py-6 sm:py-8 text-xs font-mono text-slate-500">
-                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-                    <div className="flex items-center space-x-2 justify-center sm:justify-start">
-                        <Crosshair className="w-4 h-4 text-cyan-400 shrink-0" />
-                        <span className="text-slate-300 font-bold">BLITZGRID // TACTICAL TANK ARENA</span>
-                    </div>
-                    <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 font-tech text-xs">
-                        <Link href="/terms" className="hover:text-cyan-400 transition-colors">TERMS</Link>
-                        <Link href="/privacy" className="hover:text-cyan-400 transition-colors">PRIVACY</Link>
-                        <Link href="/shop" className="hover:text-cyan-400 transition-colors">SHOP</Link>
-                        <Link href="/garage" className="hover:text-cyan-400 transition-colors">GARAGE</Link>
-                        <Link href="/leaderboard" className="hover:text-cyan-400 transition-colors">RANKS</Link>
-                        <Link href="/login" className="hover:text-cyan-400 transition-colors">LOGIN</Link>
-                    </div>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 }
