@@ -5,7 +5,9 @@ namespace App\Mail;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use App\Services\InvoiceService;
 use Illuminate\Mail\Mailables\Address;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -31,7 +33,7 @@ class TopupReceiptMail extends Mailable
                 config('mail.from.address', 'info@blitzgrid.co.uk'),
                 config('mail.from.name', 'BlitzGrid Treasury')
             ),
-            subject: "💎 Treasury Receipt: +{$this->amount} {$currencyLabel} Confirmed"
+            subject: "💎 BlitzGrid Invoice & Receipt: +{$this->amount} {$currencyLabel} Confirmed"
         );
     }
 
@@ -58,6 +60,19 @@ class TopupReceiptMail extends Mailable
 
     public function attachments(): array
     {
-        return [];
+        $invoiceService = app(InvoiceService::class);
+        $pdfData = $invoiceService->generateInvoicePdf(
+            user: $this->user,
+            currency: $this->currency,
+            amount: $this->amount,
+            priceUsd: $this->priceUsd,
+            paymentMethod: $this->paymentMethod,
+            transactionId: $this->transactionId
+        );
+
+        return [
+            Attachment::fromData(fn () => $pdfData, "BlitzGrid-Invoice-{$this->transactionId}.pdf")
+                ->withMime('application/pdf'),
+        ];
     }
 }

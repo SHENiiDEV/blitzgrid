@@ -86,4 +86,26 @@ class TopupController extends Controller
 
         return redirect()->back()->with('success', $msg);
     }
+
+    public function previewInvoice(Request $request, \App\Services\InvoiceService $invoiceService)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        $pdf = $invoiceService->generateInvoicePdf(
+            user: $user,
+            currency: 'coins',
+            amount: 1200,
+            priceUsd: 9.99,
+            paymentMethod: 'VISA DEBIT',
+            transactionId: 'TXN-SAMPLE' . strtoupper(substr(md5((string) $user->id), 0, 6))
+        );
+
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="BlitzGrid-Tax-Invoice-Preview.pdf"',
+        ]);
+    }
 }

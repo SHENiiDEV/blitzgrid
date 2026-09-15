@@ -89,6 +89,23 @@
                                 </tr>
                             </table>
 
+                            <!-- PDF Invoice Attachment Notice Card -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #061124; border: 1px solid #0284c7; border-radius: 10px; margin-bottom: 25px;">
+                                <tr>
+                                    <td style="padding: 14px 18px;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td style="width: 32px; vertical-align: middle; font-size: 20px;">📄</td>
+                                                <td style="vertical-align: middle; font-size: 12px; color: #bae6fd; line-height: 1.4;">
+                                                    <strong style="color: #38bdf8;">Official Tax Invoice Attached:</strong><br>
+                                                    Your generated PDF receipt (<code>BlitzGrid-Invoice-{{ $transactionId }}.pdf</code>) is attached to this email for your tax & accounting records.
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
                             <!-- Call to Action Button -->
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 25px;">
                                 <tr>

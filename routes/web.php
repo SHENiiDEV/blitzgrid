@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/shop/purchase/{skin}', [ShopController::class, 'purchase'])->name('shop.purchase');
     Route::get('/topup', [\App\Http\Controllers\TopupController::class, 'index'])->name('topup');
     Route::post('/topup/process', [\App\Http\Controllers\TopupController::class, 'process'])->name('topup.process');
+    Route::get('/topup/invoice/preview', [\App\Http\Controllers\TopupController::class, 'previewInvoice'])->name('topup.invoice.preview');
 });
 
 // Public Informational Routes

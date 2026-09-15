@@ -409,9 +409,22 @@ export default function Topup({ coinPackages = [], gemPackages = [], user }) {
                                 </div>
                             </div>
 
-                            <div className="text-[11px] font-mono text-slate-500 flex items-center space-x-1.5 pt-1">
-                                <Lock className="w-3.5 h-3.5 text-emerald-400" />
-                                <span>256-BIT SSL ENCRYPTED GATEWAY // INSTANT CREDIT</span>
+                            <div className="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3 space-y-1.5 text-[11px] font-mono">
+                                <div className="flex items-center space-x-1.5 text-slate-400">
+                                    <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                                    <span>256-BIT SSL ENCRYPTED GATEWAY // INSTANT CREDIT</span>
+                                </div>
+                                <div className="text-slate-400 flex items-center justify-between pt-1 border-t border-slate-900">
+                                    <span>📧 Official Tax Invoice attached to email</span>
+                                    <a 
+                                        href="/topup/invoice/preview" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-cyan-400 hover:underline hover:text-cyan-300 font-bold"
+                                    >
+                                        [View Sample PDF]
+                                    </a>
+                                </div>
                             </div>
 
                             <div className="flex gap-3 pt-2">
