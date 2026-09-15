@@ -24,7 +24,9 @@ import {
     ArrowUpCircle,
     Star,
     Gauge,
-    Sliders
+    Sliders,
+    Menu,
+    X
 } from 'lucide-react';
 
 export default function Welcome({ skins = [], topCommanders = [], isAuthenticated = false }) {
@@ -32,6 +34,7 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
     const [mouseTurretAngle, setMouseTurretAngle] = useState(0);
     const [simulatorLevel, setSimulatorLevel] = useState(50);
     const [simulatorRarity, setSimulatorRarity] = useState('legendary');
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const tankStageRef = useRef(null);
 
     const activeSkin = skins[selectedSkinIndex] || skins[0] || {
@@ -44,19 +47,34 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
         stats: { speed: 1.0, fire_rate: 1.0, damage: 1.0, max_hp: 100, shield: 50, special_perk: 'Ion Pulse Core' }
     };
 
-    // Track mouse on preview stage to rotate turret in real-time
+    // Calculate aim angle from mouse or touch coords
+    const updateTurretAim = (clientX, clientY) => {
+        if (!tankStageRef.current) return;
+        const rect = tankStageRef.current.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const angle = Math.atan2(clientY - centerY, clientX - centerX);
+        setMouseTurretAngle(angle);
+    };
+
+    // Track mouse or touch to rotate turret in real-time
     useEffect(() => {
         const handleMouseMove = (e) => {
-            if (!tankStageRef.current) return;
-            const rect = tankStageRef.current.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-            setMouseTurretAngle(angle);
+            updateTurretAim(e.clientX, e.clientY);
+        };
+
+        const handleTouchMove = (e) => {
+            if (e.touches && e.touches[0]) {
+                updateTurretAim(e.touches[0].clientX, e.touches[0].clientY);
+            }
         };
 
         window.addEventListener('mousemove', handleMouseMove);
-        return () => window.removeEventListener('mousemove', handleMouseMove);
+        window.addEventListener('touchmove', handleTouchMove, { passive: true });
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('touchmove', handleTouchMove);
+        };
     }, []);
 
     // Calculate simulated stats based on level
@@ -80,27 +98,27 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
 
             {/* Header Navigation */}
             <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/90 border-b border-slate-800">
-                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
                     
                     {/* Brand Logo */}
-                    <Link href="/" className="flex items-center space-x-3 group">
-                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 p-0.5 shadow-[0_0_20px_rgba(0,240,255,0.4)] group-hover:shadow-[0_0_30px_rgba(0,240,255,0.7)] transition-all">
+                    <Link href="/" className="flex items-center space-x-2.5 sm:space-x-3 group shrink-0">
+                        <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 p-0.5 shadow-[0_0_15px_rgba(0,240,255,0.4)] group-hover:shadow-[0_0_30px_rgba(0,240,255,0.7)] transition-all">
                             <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                                <Crosshair className="w-6 h-6 text-cyan-400 group-hover:rotate-45 transition-transform duration-300" />
+                                <Crosshair className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400 group-hover:rotate-45 transition-transform duration-300" />
                             </div>
                         </div>
                         <div className="flex flex-col">
-                            <span className="font-display font-black text-2xl tracking-wider text-white">
+                            <span className="font-display font-black text-xl sm:text-2xl tracking-wider text-white">
                                 BLITZ<span className="text-pink-500">GRID</span>
                             </span>
-                            <span className="text-[10px] tracking-widest text-cyan-400 font-mono -mt-1 uppercase">
+                            <span className="text-[9px] sm:text-[10px] tracking-widest text-cyan-400 font-mono -mt-1 uppercase">
                                 30 TPS Tactical Arena
                             </span>
                         </div>
                     </Link>
 
-                    {/* Nav Links */}
-                    <nav className="hidden md:flex items-center space-x-8 font-tech text-sm tracking-wider font-semibold">
+                    {/* Nav Links (Desktop) */}
+                    <nav className="hidden md:flex items-center space-x-6 lg:space-x-8 font-tech text-sm tracking-wider font-semibold">
                         <a href="#armory" className="text-slate-300 hover:text-cyan-400 transition-colors flex items-center space-x-1.5">
                             <Layers className="w-4 h-4 text-pink-400" />
                             <span>ARMORY</span>
@@ -123,12 +141,12 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                         </Link>
                     </nav>
 
-                    {/* Auth & Play CTAs */}
-                    <div className="flex items-center space-x-4">
+                    {/* Auth & Play CTAs (Desktop) */}
+                    <div className="hidden sm:flex items-center space-x-3 sm:space-x-4">
                         {isAuthenticated ? (
                             <Link
                                 href="/dashboard"
-                                className="px-5 py-2.5 bg-slate-900 border border-cyan-500/60 hover:bg-slate-800 text-cyan-400 font-tech font-bold text-xs rounded-xl flex items-center space-x-2 transition-all shadow-lg"
+                                className="px-4 py-2 sm:px-5 sm:py-2.5 bg-slate-900 border border-cyan-500/60 hover:bg-slate-800 text-cyan-400 font-tech font-bold text-xs rounded-xl flex items-center space-x-2 transition-all shadow-lg"
                             >
                                 <Terminal className="w-4 h-4" />
                                 <span>COMMAND DECK</span>
@@ -136,7 +154,7 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                         ) : (
                             <Link
                                 href="/login"
-                                className="px-4 py-2 font-tech font-bold text-xs tracking-wider text-slate-300 hover:text-white transition-colors"
+                                className="px-3.5 py-2 sm:px-4 sm:py-2 font-tech font-bold text-xs tracking-wider text-slate-300 hover:text-white transition-colors"
                             >
                                 LOGIN
                             </Link>
@@ -144,46 +162,140 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
 
                         <Link
                             href="/play"
-                            className="px-5 py-2.5 bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 font-display font-black text-xs tracking-wider rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.4)] flex items-center space-x-1.5 transition-all transform hover:scale-105 uppercase"
+                            className="px-4 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 font-display font-black text-xs tracking-wider rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.4)] flex items-center space-x-1.5 transition-all transform hover:scale-105 uppercase"
                         >
                             <Play className="w-4 h-4 fill-current" />
                             <span>PLAY NOW</span>
                         </Link>
                     </div>
+
+                    {/* Mobile Hamburger & Play Button */}
+                    <div className="flex sm:hidden items-center space-x-2">
+                        <Link
+                            href="/play"
+                            className="px-3 py-1.5 bg-gradient-to-r from-cyan-400 to-blue-600 text-slate-950 font-display font-black text-[11px] tracking-wider rounded-lg shadow-[0_0_12px_rgba(0,240,255,0.4)] flex items-center space-x-1 uppercase"
+                        >
+                            <Play className="w-3.5 h-3.5 fill-current" />
+                            <span>PLAY</span>
+                        </Link>
+
+                        <button
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-400 focus:outline-none"
+                            aria-label="Toggle Navigation Menu"
+                        >
+                            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                        </button>
+                    </div>
                 </div>
+
+                {/* Mobile Dropdown Menu Drawer */}
+                {mobileMenuOpen && (
+                    <div className="sm:hidden border-b border-slate-800 bg-slate-950/98 px-4 pt-3 pb-5 space-y-3 font-tech text-xs">
+                        <div className="grid grid-cols-2 gap-2">
+                            <a 
+                                href="#armory" 
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-200 flex items-center space-x-2"
+                            >
+                                <Layers className="w-4 h-4 text-pink-400" />
+                                <span>ARMORY</span>
+                            </a>
+                            <a 
+                                href="#upgrades" 
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-amber-300 flex items-center space-x-2"
+                            >
+                                <ArrowUpCircle className="w-4 h-4 text-amber-400" />
+                                <span>UPGRADES</span>
+                            </a>
+                            <a 
+                                href="#architecture" 
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-200 flex items-center space-x-2"
+                            >
+                                <Cpu className="w-4 h-4 text-cyan-400" />
+                                <span>30 TPS ENGINE</span>
+                            </a>
+                            <a 
+                                href="#powerups" 
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-200 flex items-center space-x-2"
+                            >
+                                <Zap className="w-4 h-4 text-amber-400" />
+                                <span>POWER-UPS</span>
+                            </a>
+                            <Link 
+                                href="/leaderboard" 
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-200 flex items-center space-x-2 col-span-2"
+                            >
+                                <Trophy className="w-4 h-4 text-emerald-400" />
+                                <span>GLOBAL RANKS & LEADERBOARDS</span>
+                            </Link>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-800 flex items-center gap-2">
+                            {isAuthenticated ? (
+                                <Link
+                                    href="/dashboard"
+                                    className="flex-1 py-2.5 px-4 bg-slate-900 border border-cyan-500/50 text-cyan-400 font-bold rounded-xl text-center flex items-center justify-center space-x-2"
+                                >
+                                    <Terminal className="w-4 h-4" />
+                                    <span>COMMAND DECK</span>
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link
+                                        href="/login"
+                                        className="flex-1 py-2.5 px-3 bg-slate-900 border border-slate-700 text-slate-300 font-bold rounded-xl text-center"
+                                    >
+                                        LOGIN
+                                    </Link>
+                                    <Link
+                                        href="/register"
+                                        className="flex-1 py-2.5 px-3 bg-gradient-to-r from-cyan-400 to-blue-600 text-slate-950 font-bold rounded-xl text-center"
+                                    >
+                                        SIGN UP
+                                    </Link>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
             </header>
 
             {/* HERO SECTION */}
-            <section className="relative pt-12 pb-20 lg:pt-16 lg:pb-28 overflow-hidden bg-cyber-grid">
-                <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-                <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-pink-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+            <section className="relative pt-8 pb-14 sm:pt-12 sm:pb-20 lg:pt-16 lg:pb-28 overflow-hidden bg-cyber-grid">
+                <div className="absolute top-1/4 left-1/4 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+                <div className="absolute top-1/3 right-1/4 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-pink-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
                 <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-center">
                         
                         {/* Left Hero Column */}
-                        <div className="space-y-6 text-center lg:text-left">
-                            <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-slate-900/90 border border-cyan-500/50 text-cyan-300 text-xs font-mono shadow-[0_0_15px_rgba(0,240,255,0.25)]">
-                                <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
+                        <div className="space-y-4 sm:space-y-6 text-center lg:text-left">
+                            <div className="inline-flex items-center space-x-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-slate-900/90 border border-cyan-500/50 text-cyan-300 text-[10px] sm:text-xs font-mono shadow-[0_0_15px_rgba(0,240,255,0.25)]">
+                                <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400 animate-pulse" />
                                 <span>LIVE ENGINE // 30 TPS AUTHORITATIVE SIMULATION</span>
                             </div>
 
-                            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black tracking-wide text-white uppercase leading-tight">
+                            <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black tracking-wide text-white uppercase leading-tight">
                                 <span className="text-cyan-400">NEXT-GEN</span> <br />
                                 CYBER TANK <br />
                                 <span className="text-pink-500">WARFARE</span>
                             </h1>
 
-                            <p className="text-slate-300 font-sans text-base sm:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0">
+                            <p className="text-slate-300 font-sans text-sm sm:text-base lg:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0">
                                 Real-time multiplayer combat with server-side physics, autonomous trigonometry bots, 32 customizable chassis models, and upgrade evolution up to <strong>Level 1000 (Mythic)</strong>!
                             </p>
 
                             {/* Combat Access Card */}
-                            <div className="p-4 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-2xl backdrop-blur-md max-w-xl mx-auto lg:mx-0 space-y-3">
-                                <div className="flex flex-col sm:flex-row gap-3">
+                            <div className="p-3 sm:p-4 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-2xl backdrop-blur-md max-w-xl mx-auto lg:mx-0">
+                                <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
                                     <Link
                                         href="/play"
-                                        className="flex-1 py-3.5 px-6 bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 font-display font-black text-xs uppercase tracking-wider rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.4)] flex items-center justify-center space-x-2 transition-all cursor-pointer transform hover:scale-[1.02]"
+                                        className="flex-1 py-3 sm:py-3.5 px-4 sm:px-6 bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 font-display font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.4)] flex items-center justify-center space-x-2 transition-all cursor-pointer transform hover:scale-[1.02]"
                                     >
                                         <Play className="w-4 h-4 fill-current" />
                                         <span>ENTER COMBAT ARENA</span>
@@ -191,7 +303,7 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
 
                                     <Link
                                         href="/register"
-                                        className="py-3.5 px-5 bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 border border-slate-700 font-display font-bold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center space-x-1.5 transition-colors"
+                                        className="py-3 sm:py-3.5 px-4 sm:px-5 bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 border border-slate-700 font-display font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl flex items-center justify-center space-x-1.5 transition-colors"
                                     >
                                         <UserPlus className="w-4 h-4 text-amber-400" />
                                         <span>SIGN UP</span>
@@ -200,30 +312,32 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                             </div>
 
                             {/* Feature Pills */}
-                            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2 text-xs font-mono text-slate-400">
-                                <div className="flex items-center space-x-1.5 bg-slate-950/80 border border-slate-800 px-3 py-1.5 rounded-lg">
-                                    <Check className="w-3.5 h-3.5 text-cyan-400" />
-                                    <span>32 Combat Tanks</span>
+                            <div className="grid grid-cols-3 gap-2 pt-1 font-mono text-[10px] sm:text-xs text-slate-400 max-w-xl mx-auto lg:mx-0">
+                                <div className="flex items-center justify-center sm:justify-start space-x-1 sm:space-x-1.5 bg-slate-950/80 border border-slate-800 px-2 sm:px-3 py-1.5 rounded-lg text-center">
+                                    <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                                    <span className="truncate">32 Tanks</span>
                                 </div>
-                                <div className="flex items-center space-x-1.5 bg-slate-950/80 border border-slate-800 px-3 py-1.5 rounded-lg">
-                                    <Check className="w-3.5 h-3.5 text-pink-400" />
-                                    <span>Upgrades to Level 1000</span>
+                                <div className="flex items-center justify-center sm:justify-start space-x-1 sm:space-x-1.5 bg-slate-950/80 border border-slate-800 px-2 sm:px-3 py-1.5 rounded-lg text-center">
+                                    <Check className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+                                    <span className="truncate">Lvl 1000</span>
                                 </div>
-                                <div className="flex items-center space-x-1.5 bg-slate-950/80 border border-slate-800 px-3 py-1.5 rounded-lg">
-                                    <Check className="w-3.5 h-3.5 text-amber-400" />
-                                    <span>Coins & Gems Treasury</span>
+                                <div className="flex items-center justify-center sm:justify-start space-x-1 sm:space-x-1.5 bg-slate-950/80 border border-slate-800 px-2 sm:px-3 py-1.5 rounded-lg text-center">
+                                    <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                                    <span className="truncate">Treasury</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Right Hero Column: Interactive Hologram */}
-                        <div className="relative bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
-                            <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
-                                <div className="flex items-center space-x-2 font-mono text-xs text-cyan-400 uppercase">
-                                    <Radio className="w-4 h-4 animate-pulse" />
-                                    <span>HOLOGRAPHIC CHASSIS // MOVE MOUSE TO AIM</span>
+                        <div className="relative bg-slate-900/80 border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-2xl backdrop-blur-xl">
+                            <div className="flex items-center justify-between mb-3 sm:mb-4 border-b border-slate-800 pb-2.5 sm:pb-3">
+                                <div className="flex items-center space-x-2 font-mono text-[11px] sm:text-xs text-cyan-400 uppercase">
+                                    <Radio className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-pulse" />
+                                    <span>
+                                        HOLOGRAPHIC CHASSIS // <span className="hidden sm:inline">MOVE MOUSE TO AIM</span><span className="sm:hidden">TOUCH TO AIM</span>
+                                    </span>
                                 </div>
-                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase bg-pink-950 border border-pink-500 text-pink-300">
+                                <span className="px-2 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono uppercase bg-pink-950 border border-pink-500 text-pink-300">
                                     {activeSkin.rarity}
                                 </span>
                             </div>
@@ -231,14 +345,14 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                             {/* Tank Canvas Stage */}
                             <div 
                                 ref={tankStageRef}
-                                className="relative h-64 sm:h-72 rounded-2xl bg-[#01040a] border border-slate-800/80 flex items-center justify-center overflow-hidden bg-cyber-dots cursor-crosshair"
+                                className="relative h-48 sm:h-64 lg:h-72 rounded-xl sm:rounded-2xl bg-[#01040a] border border-slate-800/80 flex items-center justify-center overflow-hidden bg-cyber-dots cursor-crosshair touch-none"
                             >
                                 <div 
-                                    className="absolute w-56 h-56 rounded-full blur-3xl opacity-35 animate-pulse"
+                                    className="absolute w-44 sm:w-56 h-44 sm:h-56 rounded-full blur-3xl opacity-35 animate-pulse"
                                     style={{ backgroundColor: activeSkin.color_glow }}
                                 />
 
-                                <svg width="220" height="180" viewBox="0 0 160 140" className="relative z-10 drop-shadow-[0_0_25px_rgba(0,240,255,0.4)]">
+                                <svg width="200" height="160" viewBox="0 0 160 140" className="relative z-10 drop-shadow-[0_0_25px_rgba(0,240,255,0.4)] max-w-full">
                                     {/* Tracks */}
                                     <rect x="20" y="14" width="120" height="24" rx="4" fill="#090d16" stroke="#334155" strokeWidth="2.5" />
                                     <rect x="20" y="102" width="120" height="24" rx="4" fill="#090d16" stroke="#334155" strokeWidth="2.5" />
@@ -265,28 +379,28 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                             </div>
 
                             {/* Active Tank Title & Stats */}
-                            <div className="mt-5 space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h3 className="font-display font-bold text-xl text-white">
+                            <div className="mt-4 sm:mt-5 space-y-2.5 sm:space-y-3">
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className="min-w-0">
+                                        <h3 className="font-display font-bold text-lg sm:text-xl text-white truncate">
                                             {activeSkin.name}
                                         </h3>
-                                        <p className="text-xs font-mono text-slate-400 mt-0.5">
+                                        <p className="text-[11px] sm:text-xs font-mono text-slate-400 mt-0.5 line-clamp-1">
                                             {activeSkin.description}
                                         </p>
                                     </div>
                                     <Link
                                         href="/garage"
-                                        className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-tech font-bold text-xs rounded-xl shadow-lg flex items-center space-x-1.5 transition-colors"
+                                        className="px-3 py-1.5 sm:px-4 sm:py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-tech font-bold text-xs rounded-xl shadow-lg flex items-center space-x-1.5 transition-colors shrink-0"
                                     >
                                         <Layers className="w-3.5 h-3.5" />
                                         <span>GARAGE</span>
                                     </Link>
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-3 font-tech text-xs pt-3 border-t border-slate-800">
+                                <div className="grid grid-cols-3 gap-2 sm:gap-3 font-tech text-xs pt-2.5 sm:pt-3 border-t border-slate-800">
                                     <div>
-                                        <div className="flex justify-between text-slate-400 font-mono text-[10px] mb-1">
+                                        <div className="flex justify-between text-slate-400 font-mono text-[9px] sm:text-[10px] mb-1">
                                             <span>SPEED</span>
                                             <span className="text-amber-400 font-bold">{Math.round((activeSkin.stats?.speed || 1.0) * 100)}%</span>
                                         </div>
@@ -296,7 +410,7 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                                     </div>
 
                                     <div>
-                                        <div className="flex justify-between text-slate-400 font-mono text-[10px] mb-1">
+                                        <div className="flex justify-between text-slate-400 font-mono text-[9px] sm:text-[10px] mb-1">
                                             <span>FIRE RATE</span>
                                             <span className="text-pink-400 font-bold">{Math.round((activeSkin.stats?.fire_rate || 1.0) * 100)}%</span>
                                         </div>
@@ -306,7 +420,7 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                                     </div>
 
                                     <div>
-                                        <div className="flex justify-between text-slate-400 font-mono text-[10px] mb-1">
+                                        <div className="flex justify-between text-slate-400 font-mono text-[9px] sm:text-[10px] mb-1">
                                             <span>ARMOR</span>
                                             <span className="text-cyan-400 font-bold">{activeSkin.stats?.max_hp || activeSkin.stats?.armor || 100} HP</span>
                                         </div>
@@ -323,45 +437,45 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
             </section>
 
             {/* UPGRADE EVOLUTION SECTION (NEW FEATURE HIGHLIGHT) */}
-            <section id="upgrades" className="py-20 bg-gradient-to-b from-[#02050e] via-slate-950 to-[#02050e] border-t border-slate-900 relative overflow-hidden">
+            <section id="upgrades" className="py-12 sm:py-20 bg-gradient-to-b from-[#02050e] via-slate-950 to-[#02050e] border-t border-slate-900 relative overflow-hidden">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gradient-to-r from-cyan-500/10 via-pink-500/10 to-amber-500/10 rounded-full blur-[140px] pointer-events-none"></div>
 
                 <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     
-                    <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-                        <div className="inline-flex items-center space-x-2 text-xs font-mono text-amber-400 uppercase tracking-widest px-3 py-1 rounded-full bg-amber-950/40 border border-amber-500/30">
-                            <ArrowUpCircle className="w-4 h-4" />
-                            <span>CHASSIS EVOLUTION & TUNING // LEVEL 1 TO 1000</span>
+                    <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-14 space-y-2 sm:space-y-3">
+                        <div className="inline-flex items-center space-x-2 text-[10px] sm:text-xs font-mono text-amber-400 uppercase tracking-widest px-3 py-1 rounded-full bg-amber-950/40 border border-amber-500/30">
+                            <ArrowUpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            <span>CHASSIS EVOLUTION // LVL 1 TO 1000</span>
                         </div>
-                        <h2 className="font-display text-3xl sm:text-5xl font-black tracking-wider text-white">
-                            AMPLIFY COMBAT POWER WITH <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-pink-500 to-cyan-400">UPGRADES</span>
+                        <h2 className="font-display text-2xl sm:text-4xl lg:text-5xl font-black tracking-wider text-white">
+                            AMPLIFY POWER WITH <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-pink-500 to-cyan-400">UPGRADES</span>
                         </h2>
-                        <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                        <p className="text-slate-300 text-xs sm:text-base leading-relaxed">
                             Upgrade your acquired chassis skins with <strong>Cyber Coins</strong> & <strong>Quantum Gems</strong>. Each level increases speed, firing rate, kinetic damage, armor durability, and shield capacity!
                         </p>
                     </div>
 
-                    {/* 5 Rarity Tier Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-14 font-tech">
+                    {/* 5 Rarity Tier Cards (Responsive Deck) */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-10 sm:mb-14 font-tech">
                         
                         {/* COMMON: LVL 25 */}
                         <div 
                             onClick={() => { setSimulatorRarity('common'); setSimulatorLevel(25); }}
-                            className={`rounded-3xl p-5 border transition-all cursor-pointer select-none relative overflow-hidden ${
+                            className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border transition-all cursor-pointer select-none relative overflow-hidden ${
                                 simulatorRarity === 'common' 
                                     ? 'bg-slate-900 border-slate-500 ring-2 ring-slate-400/50 shadow-[0_0_20px_rgba(148,163,184,0.3)]' 
                                     : 'bg-slate-950/80 border-slate-800/80 hover:border-slate-700'
                             }`}
                         >
-                            <div className="text-[10px] font-mono text-slate-400 uppercase mb-1">TIER I</div>
-                            <h3 className="font-display text-xl font-black text-white">COMMON</h3>
-                            <div className="inline-flex items-center space-x-1 text-[11px] font-mono text-slate-300 font-bold mt-1 bg-slate-900 border border-slate-700 px-2 py-0.5 rounded-lg">
+                            <div className="text-[9px] sm:text-[10px] font-mono text-slate-400 uppercase mb-0.5">TIER I</div>
+                            <h3 className="font-display text-base sm:text-xl font-black text-white">COMMON</h3>
+                            <div className="inline-flex items-center space-x-1 text-[10px] sm:text-[11px] font-mono text-slate-300 font-bold mt-1 bg-slate-900 border border-slate-700 px-1.5 sm:px-2 py-0.5 rounded-lg">
                                 <Star className="w-3 h-3 text-slate-400 fill-current" />
                                 <span>MAX LVL 25</span>
                             </div>
-                            <ul className="mt-3 space-y-1 text-[11px] font-mono text-slate-300">
-                                <li className="text-emerald-400 font-bold">+29% Speed & +45% DMG</li>
-                                <li>+60 HP Hull Armor</li>
+                            <ul className="mt-2.5 sm:mt-3 space-y-1 text-[10px] sm:text-[11px] font-mono text-slate-300">
+                                <li className="text-emerald-400 font-bold">+29% Spd & +45% DMG</li>
+                                <li>+60 HP Hull</li>
                                 <li>+36 SHD Barrier</li>
                             </ul>
                         </div>
@@ -369,21 +483,21 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                         {/* RARE: LVL 50 */}
                         <div 
                             onClick={() => { setSimulatorRarity('rare'); setSimulatorLevel(50); }}
-                            className={`rounded-3xl p-5 border transition-all cursor-pointer select-none relative overflow-hidden ${
+                            className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border transition-all cursor-pointer select-none relative overflow-hidden ${
                                 simulatorRarity === 'rare' 
                                     ? 'bg-slate-900 border-blue-500 ring-2 ring-blue-400/50 shadow-[0_0_20px_rgba(59,130,246,0.3)]' 
                                     : 'bg-slate-950/80 border-slate-800/80 hover:border-slate-700'
                             }`}
                         >
-                            <div className="text-[10px] font-mono text-blue-400 uppercase mb-1">TIER II</div>
-                            <h3 className="font-display text-xl font-black text-blue-400">RARE</h3>
-                            <div className="inline-flex items-center space-x-1 text-[11px] font-mono text-blue-300 font-bold mt-1 bg-blue-950 border border-blue-500/50 px-2 py-0.5 rounded-lg">
+                            <div className="text-[9px] sm:text-[10px] font-mono text-blue-400 uppercase mb-0.5">TIER II</div>
+                            <h3 className="font-display text-base sm:text-xl font-black text-blue-400">RARE</h3>
+                            <div className="inline-flex items-center space-x-1 text-[10px] sm:text-[11px] font-mono text-blue-300 font-bold mt-1 bg-blue-950 border border-blue-500/50 px-1.5 sm:px-2 py-0.5 rounded-lg">
                                 <Star className="w-3 h-3 text-blue-400 fill-current" />
                                 <span>MAX LVL 50</span>
                             </div>
-                            <ul className="mt-3 space-y-1 text-[11px] font-mono text-slate-300">
-                                <li className="text-emerald-400 font-bold">+59% Speed & +88% DMG</li>
-                                <li>+122 HP Hull Armor</li>
+                            <ul className="mt-2.5 sm:mt-3 space-y-1 text-[10px] sm:text-[11px] font-mono text-slate-300">
+                                <li className="text-emerald-400 font-bold">+59% Spd & +88% DMG</li>
+                                <li>+122 HP Hull</li>
                                 <li>+73 SHD Barrier</li>
                             </ul>
                         </div>
@@ -391,21 +505,21 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                         {/* EPIC: LVL 75 */}
                         <div 
                             onClick={() => { setSimulatorRarity('epic'); setSimulatorLevel(75); }}
-                            className={`rounded-3xl p-5 border transition-all cursor-pointer select-none relative overflow-hidden ${
+                            className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border transition-all cursor-pointer select-none relative overflow-hidden ${
                                 simulatorRarity === 'epic' 
                                     ? 'bg-slate-900 border-purple-500 ring-2 ring-purple-400/50 shadow-[0_0_20px_rgba(168,85,247,0.3)]' 
                                     : 'bg-slate-950/80 border-slate-800/80 hover:border-slate-700'
                             }`}
                         >
-                            <div className="text-[10px] font-mono text-purple-400 uppercase mb-1">TIER III</div>
-                            <h3 className="font-display text-xl font-black text-purple-400">EPIC</h3>
-                            <div className="inline-flex items-center space-x-1 text-[11px] font-mono text-purple-300 font-bold mt-1 bg-purple-950 border border-purple-500/50 px-2 py-0.5 rounded-lg">
+                            <div className="text-[9px] sm:text-[10px] font-mono text-purple-400 uppercase mb-0.5">TIER III</div>
+                            <h3 className="font-display text-base sm:text-xl font-black text-purple-400">EPIC</h3>
+                            <div className="inline-flex items-center space-x-1 text-[10px] sm:text-[11px] font-mono text-purple-300 font-bold mt-1 bg-purple-950 border border-purple-500/50 px-1.5 sm:px-2 py-0.5 rounded-lg">
                                 <Star className="w-3 h-3 text-purple-400 fill-current" />
                                 <span>MAX LVL 75</span>
                             </div>
-                            <ul className="mt-3 space-y-1 text-[11px] font-mono text-slate-300">
-                                <li className="text-emerald-400 font-bold">+89% Speed & +133% DMG</li>
-                                <li>+185 HP Hull Armor</li>
+                            <ul className="mt-2.5 sm:mt-3 space-y-1 text-[10px] sm:text-[11px] font-mono text-slate-300">
+                                <li className="text-emerald-400 font-bold">+89% Spd & +133% DMG</li>
+                                <li>+185 HP Hull</li>
                                 <li>+111 SHD Barrier</li>
                             </ul>
                         </div>
@@ -413,43 +527,43 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                         {/* LEGENDARY: LVL 100 */}
                         <div 
                             onClick={() => { setSimulatorRarity('legendary'); setSimulatorLevel(100); }}
-                            className={`rounded-3xl p-5 border transition-all cursor-pointer select-none relative overflow-hidden ${
+                            className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border transition-all cursor-pointer select-none relative overflow-hidden ${
                                 simulatorRarity === 'legendary' 
                                     ? 'bg-slate-900 border-amber-500 ring-2 ring-amber-400/50 shadow-[0_0_25px_rgba(245,158,11,0.4)]' 
                                     : 'bg-slate-950/80 border-slate-800/80 hover:border-slate-700'
                             }`}
                         >
-                            <div className="text-[10px] font-mono text-amber-400 uppercase mb-1">TIER IV</div>
-                            <h3 className="font-display text-xl font-black text-amber-400">LEGENDARY</h3>
-                            <div className="inline-flex items-center space-x-1 text-[11px] font-mono text-amber-300 font-bold mt-1 bg-amber-950 border border-amber-500/50 px-2 py-0.5 rounded-lg">
+                            <div className="text-[9px] sm:text-[10px] font-mono text-amber-400 uppercase mb-0.5">TIER IV</div>
+                            <h3 className="font-display text-base sm:text-xl font-black text-amber-400">LEGENDARY</h3>
+                            <div className="inline-flex items-center space-x-1 text-[10px] sm:text-[11px] font-mono text-amber-300 font-bold mt-1 bg-amber-950 border border-amber-500/50 px-1.5 sm:px-2 py-0.5 rounded-lg">
                                 <Sparkles className="w-3 h-3 text-amber-400" />
                                 <span>MAX LVL 100</span>
                             </div>
-                            <ul className="mt-3 space-y-1 text-[11px] font-mono text-slate-300">
-                                <li className="text-emerald-400 font-bold">+119% Speed & +178% DMG</li>
-                                <li>+247 HP Hull Armor</li>
+                            <ul className="mt-2.5 sm:mt-3 space-y-1 text-[10px] sm:text-[11px] font-mono text-slate-300">
+                                <li className="text-emerald-400 font-bold">+119% Spd & +178% DMG</li>
+                                <li>+247 HP Hull</li>
                                 <li>+148 SHD Barrier</li>
                             </ul>
                         </div>
 
-                        {/* MYTHIC: LVL 1000 */}
+                        {/* MYTHIC: LVL 1000 (Spans 2 cols on mobile) */}
                         <div 
                             onClick={() => { setSimulatorRarity('mythic'); setSimulatorLevel(1000); }}
-                            className={`rounded-3xl p-5 border transition-all cursor-pointer select-none relative overflow-hidden ${
+                            className={`col-span-2 sm:col-span-1 lg:col-span-1 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border transition-all cursor-pointer select-none relative overflow-hidden ${
                                 simulatorRarity === 'mythic' 
                                     ? 'bg-slate-900 border-red-500 ring-2 ring-red-400/60 shadow-[0_0_25px_rgba(239,68,68,0.5)]' 
                                     : 'bg-slate-950/80 border-slate-800/80 hover:border-red-900/60'
                             }`}
                         >
-                            <div className="text-[10px] font-mono text-red-400 uppercase mb-1">TIER V // INFINITE</div>
-                            <h3 className="font-display text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-pink-500 to-amber-400">MYTHIC</h3>
-                            <div className="inline-flex items-center space-x-1 text-[11px] font-mono text-red-300 font-bold mt-1 bg-red-950 border border-red-500/50 px-2 py-0.5 rounded-lg">
+                            <div className="text-[9px] sm:text-[10px] font-mono text-red-400 uppercase mb-0.5">TIER V // INFINITE</div>
+                            <h3 className="font-display text-base sm:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-pink-500 to-amber-400">MYTHIC</h3>
+                            <div className="inline-flex items-center space-x-1 text-[10px] sm:text-[11px] font-mono text-red-300 font-bold mt-1 bg-red-950 border border-red-500/50 px-1.5 sm:px-2 py-0.5 rounded-lg">
                                 <Sparkles className="w-3 h-3 text-red-400 animate-pulse" />
                                 <span>MAX LVL 1000</span>
                             </div>
-                            <ul className="mt-3 space-y-1 text-[11px] font-mono text-slate-300">
-                                <li className="text-emerald-400 font-bold">+1200% Speed & +1800% DMG</li>
-                                <li>+2500 HP Hull Armor</li>
+                            <ul className="mt-2.5 sm:mt-3 space-y-1 text-[10px] sm:text-[11px] font-mono text-slate-300">
+                                <li className="text-emerald-400 font-bold">+1200% Spd & +1800% DMG</li>
+                                <li>+2500 HP Hull</li>
                                 <li>+1500 SHD Barrier</li>
                             </ul>
                         </div>
@@ -457,17 +571,17 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                     </div>
 
                     {/* Interactive Live Upgrade Simulator Card */}
-                    <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-xl">
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    <div className="bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-10 shadow-2xl backdrop-blur-xl">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
                             
                             {/* Left Controls & Slider */}
-                            <div className="lg:col-span-6 space-y-6">
+                            <div className="lg:col-span-6 space-y-4 sm:space-y-6">
                                 <div>
-                                    <div className="flex items-center space-x-2 text-xs font-mono text-cyan-400 uppercase tracking-widest mb-1">
-                                        <Sliders className="w-4 h-4" />
+                                    <div className="flex items-center space-x-2 text-[10px] sm:text-xs font-mono text-cyan-400 uppercase tracking-widest mb-1">
+                                        <Sliders className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                         <span>INTERACTIVE LEVEL SIMULATOR</span>
                                     </div>
-                                    <h3 className="font-display text-2xl sm:text-3xl font-black text-white">
+                                    <h3 className="font-display text-xl sm:text-3xl font-black text-white">
                                         SLIDE LEVEL: <span className="text-amber-400">LVL {clampedLevel} / {maxLevelForRarity}</span>
                                     </h3>
                                     <p className="text-xs font-sans text-slate-400 mt-1">
@@ -477,10 +591,10 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
 
                                 {/* Slider Component */}
                                 <div className="space-y-2">
-                                    <div className="flex justify-between font-mono text-xs text-slate-400">
+                                    <div className="flex justify-between font-mono text-[11px] sm:text-xs text-slate-400">
                                         <span>Level 1 (Stock)</span>
                                         <span className="text-cyan-400 font-bold">Level {clampedLevel}</span>
-                                        <span>Max Level {maxLevelForRarity}</span>
+                                        <span>Max {maxLevelForRarity}</span>
                                     </div>
                                     <input
                                         type="range"
@@ -493,12 +607,12 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                                 </div>
 
                                 {/* Quick level buttons */}
-                                <div className="flex flex-wrap gap-2 font-mono text-xs">
+                                <div className="flex flex-wrap gap-1.5 sm:gap-2 font-mono text-[11px] sm:text-xs">
                                     {[1, 25, 50, 75, 100, 250, 500, 1000].filter(l => l <= maxLevelForRarity).map((lvl) => (
                                         <button
                                             key={lvl}
                                             onClick={() => setSimulatorLevel(lvl)}
-                                            className={`px-3 py-1 rounded-lg border transition-all cursor-pointer ${
+                                            className={`px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
                                                 clampedLevel === lvl
                                                     ? 'bg-cyan-500 text-slate-950 font-bold border-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.4)]'
                                                     : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
@@ -509,23 +623,23 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                                     ))}
                                 </div>
 
-                                <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
+                                <div className="pt-3 sm:pt-4 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                     <Link
                                         href="/garage"
-                                        className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-95 text-slate-950 font-display font-black text-xs uppercase tracking-wider rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.4)] flex items-center space-x-2 transition-all"
+                                        className="px-5 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-95 text-slate-950 font-display font-black text-xs uppercase tracking-wider rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.4)] flex items-center justify-center space-x-2 transition-all"
                                     >
                                         <ArrowUpCircle className="w-4 h-4" />
                                         <span>UPGRADE IN GARAGE</span>
                                     </Link>
-                                    <span className="text-xs font-mono text-slate-500">Requires Coins & Gems</span>
+                                    <span className="text-[11px] sm:text-xs font-mono text-slate-500 text-center sm:text-right">Requires Coins & Gems</span>
                                 </div>
                             </div>
 
                             {/* Right Live Stat Gauges */}
-                            <div className="lg:col-span-6 bg-slate-950/80 border border-slate-800 rounded-2xl p-6 space-y-4 font-tech">
-                                <div className="text-xs font-mono text-slate-400 uppercase tracking-widest flex items-center justify-between border-b border-slate-800 pb-2">
-                                    <span>SIMULATED CHASSIS TELEMETRY</span>
-                                    <span className="text-emerald-400 font-bold">LEVEL {clampedLevel} AMPLIFICATION</span>
+                            <div className="lg:col-span-6 bg-slate-950/80 border border-slate-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 space-y-3 sm:space-y-4 font-tech">
+                                <div className="text-[10px] sm:text-xs font-mono text-slate-400 uppercase tracking-widest flex items-center justify-between border-b border-slate-800 pb-2">
+                                    <span>SIMULATED TELEMETRY</span>
+                                    <span className="text-emerald-400 font-bold">LVL {clampedLevel} AMPLIFIED</span>
                                 </div>
 
                                 {/* Speed */}
@@ -535,7 +649,7 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                                             <Zap className="w-3.5 h-3.5 text-amber-400" />
                                             <span>MANEUVER VELOCITY</span>
                                         </span>
-                                        <span className="text-amber-400 font-bold text-sm">{simSpeed}%</span>
+                                        <span className="text-amber-400 font-bold text-xs sm:text-sm">{simSpeed}%</span>
                                     </div>
                                     <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden p-0.5 border border-slate-800">
                                         <div className="h-full bg-amber-400 rounded-full transition-all duration-200" style={{ width: `${Math.min(100, simSpeed / 2.2)}%` }}></div>
@@ -549,7 +663,7 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                                             <Crosshair className="w-3.5 h-3.5 text-red-400" />
                                             <span>KINETIC IMPACT DAMAGE</span>
                                         </span>
-                                        <span className="text-red-400 font-bold text-sm">{simDamage}%</span>
+                                        <span className="text-red-400 font-bold text-xs sm:text-sm">{simDamage}%</span>
                                     </div>
                                     <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden p-0.5 border border-slate-800">
                                         <div className="h-full bg-red-400 rounded-full transition-all duration-200" style={{ width: `${Math.min(100, simDamage / 2.8)}%` }}></div>
@@ -563,7 +677,7 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                                             <Flame className="w-3.5 h-3.5 text-pink-400" />
                                             <span>PLASMA FIRE RATE</span>
                                         </span>
-                                        <span className="text-pink-400 font-bold text-sm">{simFireRate}%</span>
+                                        <span className="text-pink-400 font-bold text-xs sm:text-sm">{simFireRate}%</span>
                                     </div>
                                     <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden p-0.5 border border-slate-800">
                                         <div className="h-full bg-pink-500 rounded-full transition-all duration-200" style={{ width: `${Math.min(100, simFireRate / 2.5)}%` }}></div>
@@ -571,21 +685,21 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                                 </div>
 
                                 {/* Armor & Shield 2-Column */}
-                                <div className="grid grid-cols-2 gap-3 pt-2">
-                                    <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-xl font-mono">
-                                        <div className="text-[10px] text-slate-400 flex items-center space-x-1">
+                                <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-1 sm:pt-2">
+                                    <div className="bg-slate-900/90 border border-slate-800 p-2.5 sm:p-3 rounded-xl font-mono">
+                                        <div className="text-[9px] sm:text-[10px] text-slate-400 flex items-center space-x-1">
                                             <Shield className="w-3.5 h-3.5 text-cyan-400" />
                                             <span>HULL ARMOR</span>
                                         </div>
-                                        <div className="text-base font-black text-cyan-300 mt-1">{simHp} HP</div>
+                                        <div className="text-sm sm:text-base font-black text-cyan-300 mt-1">{simHp} HP</div>
                                     </div>
 
-                                    <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-xl font-mono">
-                                        <div className="text-[10px] text-slate-400 flex items-center space-x-1">
+                                    <div className="bg-slate-900/90 border border-slate-800 p-2.5 sm:p-3 rounded-xl font-mono">
+                                        <div className="text-[9px] sm:text-[10px] text-slate-400 flex items-center space-x-1">
                                             <Activity className="w-3.5 h-3.5 text-blue-400" />
                                             <span>ENERGY SHIELD</span>
                                         </div>
-                                        <div className="text-base font-black text-blue-300 mt-1">{simShield} SHD</div>
+                                        <div className="text-sm sm:text-base font-black text-blue-300 mt-1">{simShield} SHD</div>
                                     </div>
                                 </div>
 
@@ -598,24 +712,24 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
             </section>
 
             {/* ARMORY CATALOG SECTION */}
-            <section id="armory" className="py-20 bg-[#02050e] border-t border-slate-900">
+            <section id="armory" className="py-12 sm:py-20 bg-[#02050e] border-t border-slate-900">
                 <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     
-                    <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
-                        <div className="inline-flex items-center space-x-2 text-xs font-mono text-pink-400 uppercase tracking-widest">
-                            <Layers className="w-4 h-4" />
-                            <span>TACTICAL ARMORY CATALOG // 32 CHASSIS</span>
+                    <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 space-y-2">
+                        <div className="inline-flex items-center space-x-2 text-[10px] sm:text-xs font-mono text-pink-400 uppercase tracking-widest">
+                            <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            <span>TACTICAL ARMORY // 32 CHASSIS</span>
                         </div>
-                        <h2 className="font-display text-3xl sm:text-4xl font-black tracking-wider text-white">
+                        <h2 className="font-display text-2xl sm:text-4xl font-black tracking-wider text-white">
                             SELECT YOUR <span className="text-cyan-400">COMBAT MACHINE</span>
                         </h2>
-                        <p className="text-slate-400 text-sm">
+                        <p className="text-slate-400 text-xs sm:text-sm">
                             Click any chassis to preview its live telemetry and rotating turret.
                         </p>
                     </div>
 
                     {/* 3-Column Card Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {skins.slice(0, 6).map((skin, idx) => {
                             const isSelected = selectedSkinIndex === idx;
 
@@ -623,7 +737,7 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                                 <div
                                     key={skin.id}
                                     onClick={() => setSelectedSkinIndex(idx)}
-                                    className={`rounded-2xl p-5 border cursor-pointer transition-all duration-200 select-none flex flex-col justify-between ${
+                                    className={`rounded-2xl p-4 sm:p-5 border cursor-pointer transition-all duration-200 select-none flex flex-col justify-between ${
                                         isSelected
                                             ? 'bg-slate-900 border-cyan-500 shadow-[0_0_25px_rgba(0,240,255,0.25)] ring-1 ring-cyan-500'
                                             : 'bg-slate-950/80 border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/60'
@@ -631,7 +745,7 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                                 >
                                     <div>
                                         <div className="flex items-center justify-between mb-3">
-                                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold ${
+                                            <span className={`px-2 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono uppercase font-bold ${
                                                 skin.rarity === 'legendary' ? 'bg-amber-950 border border-amber-500 text-amber-300' :
                                                 skin.rarity === 'epic' ? 'bg-purple-950 border border-purple-500 text-purple-300' :
                                                 skin.rarity === 'rare' ? 'bg-blue-950 border border-blue-500 text-blue-300' :
@@ -641,13 +755,13 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                                             </span>
 
                                             <div 
-                                                className="w-4 h-4 rounded-full" 
+                                                className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full" 
                                                 style={{ backgroundColor: skin.color_glow, boxShadow: `0 0 10px ${skin.color_glow}` }}
                                             />
                                         </div>
 
                                         {/* Tank Mini Preview */}
-                                        <div className="h-32 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-center mb-4 overflow-hidden relative bg-cyber-dots">
+                                        <div className="h-28 sm:h-32 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-center mb-3 sm:mb-4 overflow-hidden relative bg-cyber-dots">
                                             <div 
                                                 className="absolute w-20 h-20 rounded-full blur-xl opacity-25"
                                                 style={{ backgroundColor: skin.color_glow }}
@@ -664,16 +778,16 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                                             </svg>
                                         </div>
 
-                                        <h3 className="font-display font-bold text-lg text-white mb-1">{skin.name}</h3>
-                                        <p className="text-xs font-sans text-slate-400 leading-relaxed mb-4 line-clamp-2">{skin.description}</p>
+                                        <h3 className="font-display font-bold text-base sm:text-lg text-white mb-1">{skin.name}</h3>
+                                        <p className="text-[11px] sm:text-xs font-sans text-slate-400 leading-relaxed mb-3 sm:mb-4 line-clamp-2">{skin.description}</p>
                                     </div>
 
-                                    <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
+                                    <div className="pt-2.5 sm:pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] sm:text-xs font-mono">
                                         <span className="text-amber-400 font-bold">
                                             {skin.price_coins === 0 ? 'STARTER TANK' : `${skin.price_coins} COINS`}
                                         </span>
                                         <span className="text-cyan-400 flex items-center space-x-1 font-tech font-bold">
-                                            <span>{isSelected ? 'ACTIVE PREVIEW' : 'SELECT'}</span>
+                                            <span>{isSelected ? 'ACTIVE' : 'SELECT'}</span>
                                             <ArrowRight className="w-3.5 h-3.5" />
                                         </span>
                                     </div>
@@ -682,10 +796,10 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                         })}
                     </div>
 
-                    <div className="mt-10 text-center">
+                    <div className="mt-8 sm:mt-10 text-center">
                         <Link
                             href="/shop"
-                            className="inline-flex items-center space-x-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-amber-400 hover:text-amber-300 font-tech font-bold text-sm rounded-xl shadow-lg transition-all"
+                            className="inline-flex items-center space-x-2 px-5 py-2.5 sm:px-6 sm:py-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-amber-400 hover:text-amber-300 font-tech font-bold text-xs sm:text-sm rounded-xl shadow-lg transition-all"
                         >
                             <ShoppingBag className="w-4 h-4" />
                             <span>VIEW ALL 32 CHASSIS IN ARMORY SHOP</span>
@@ -696,48 +810,48 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
             </section>
 
             {/* ENGINE ARCHITECTURE SECTION */}
-            <section id="architecture" className="py-20 bg-[#030712] border-t border-slate-900">
+            <section id="architecture" className="py-12 sm:py-20 bg-[#030712] border-t border-slate-900">
                 <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     
-                    <div className="text-center max-w-2xl mx-auto mb-14 space-y-2">
-                        <div className="inline-flex items-center space-x-2 text-xs font-mono text-cyan-400 uppercase tracking-widest">
-                            <Cpu className="w-4 h-4" />
+                    <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-14 space-y-2">
+                        <div className="inline-flex items-center space-x-2 text-[10px] sm:text-xs font-mono text-cyan-400 uppercase tracking-widest">
+                            <Cpu className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             <span>ENGINE ARCHITECTURE</span>
                         </div>
-                        <h2 className="font-display text-3xl sm:text-4xl font-black tracking-wider text-white">
+                        <h2 className="font-display text-2xl sm:text-4xl font-black tracking-wider text-white">
                             PRECISION <span className="text-cyan-400">ENGINEERING</span>
                         </h2>
-                        <p className="text-slate-400 text-sm">
-                            Strict architectural boundary between Laravel 13 meta-game portal and standalone Node.js game engine.
+                        <p className="text-slate-400 text-xs sm:text-sm">
+                            Strict architectural boundary between Laravel meta-game portal and standalone Node.js game engine.
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-3">
-                            <div className="w-12 h-12 rounded-xl bg-cyan-950 border border-cyan-500/50 flex items-center justify-center text-cyan-400">
-                                <Cpu className="w-6 h-6" />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-2.5 sm:space-y-3">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-cyan-950 border border-cyan-500/50 flex items-center justify-center text-cyan-400">
+                                <Cpu className="w-5 h-5 sm:w-6 sm:h-6" />
                             </div>
-                            <h3 className="font-display font-bold text-lg text-white">30 TPS Authoritative Loop</h3>
+                            <h3 className="font-display font-bold text-base sm:text-lg text-white">30 TPS Authoritative Loop</h3>
                             <p className="text-xs font-sans text-slate-400 leading-relaxed">
                                 Continuous server tick simulation computed every 33.33ms. Clients transmit only raw keystrokes (WASD, mouse aim angle). Coordinates are strictly authoritative, neutralizing speed hacks and teleportation.
                             </p>
                         </div>
 
-                        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-3">
-                            <div className="w-12 h-12 rounded-xl bg-pink-950 border border-pink-500/50 flex items-center justify-center text-pink-400">
-                                <Target className="w-6 h-6" />
+                        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-2.5 sm:space-y-3">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-pink-950 border border-pink-500/50 flex items-center justify-center text-pink-400">
+                                <Target className="w-5 h-5 sm:w-6 sm:h-6" />
                             </div>
-                            <h3 className="font-display font-bold text-lg text-white">Autonomous Bot AI</h3>
+                            <h3 className="font-display font-bold text-base sm:text-lg text-white">Autonomous Bot AI</h3>
                             <p className="text-xs font-sans text-slate-400 leading-relaxed">
                                 Smart combat bots patrol random vectors and dynamically lock targets within 400px. Using trigonometry atan2(dy, dx) with distance leading calculations, bots engage targets dynamically.
                             </p>
                         </div>
 
-                        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-3">
-                            <div className="w-12 h-12 rounded-xl bg-amber-950 border border-amber-500 flex items-center justify-center text-amber-400">
-                                <Zap className="w-6 h-6" />
+                        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-2.5 sm:space-y-3">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-950 border border-amber-500 flex items-center justify-center text-amber-400">
+                                <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
                             </div>
-                            <h3 className="font-display font-bold text-lg text-white">60+ FPS Interpolation</h3>
+                            <h3 className="font-display font-bold text-base sm:text-lg text-white">60+ FPS Interpolation</h3>
                             <p className="text-xs font-sans text-slate-400 leading-relaxed">
                                 HTML5 Canvas rendering loop uses linear position and rotational slerp interpolation to bridge 30Hz server state packets into fluid 60+ FPS visual motion without micro-stuttering.
                             </p>
@@ -746,80 +860,80 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                 </div>
             </section>
 
-            {/* TACTICAL POWER-UPS SECTION */}
-            <section id="powerups" className="py-20 bg-[#02050e] border-t border-slate-900">
+            {/* TACTICAL POWER-UPS SECTION (2-Col Mobile Grid) */}
+            <section id="powerups" className="py-12 sm:py-20 bg-[#02050e] border-t border-slate-900">
                 <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     
-                    <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
-                        <div className="inline-flex items-center space-x-2 text-xs font-mono text-amber-400 uppercase tracking-widest">
-                            <Zap className="w-4 h-4" />
+                    <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 space-y-2">
+                        <div className="inline-flex items-center space-x-2 text-[10px] sm:text-xs font-mono text-amber-400 uppercase tracking-widest">
+                            <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             <span>ARENA DROPS</span>
                         </div>
-                        <h2 className="font-display text-3xl sm:text-4xl font-black tracking-wider text-white">
+                        <h2 className="font-display text-2xl sm:text-4xl font-black tracking-wider text-white">
                             TACTICAL <span className="text-amber-400">POWER-UPS</span>
                         </h2>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 text-center space-y-3 shadow-lg">
-                            <div className="w-14 h-14 mx-auto rounded-xl bg-cyan-950 border border-cyan-500 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.4)]">
-                                <Shield className="w-7 h-7" />
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 sm:p-6 text-center space-y-2 sm:space-y-3 shadow-lg">
+                            <div className="w-10 h-10 sm:w-14 sm:h-14 mx-auto rounded-xl bg-cyan-950 border border-cyan-500 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+                                <Shield className="w-5 h-5 sm:w-7 sm:h-7" />
                             </div>
-                            <h4 className="font-display font-bold text-white">ENERGY SHIELD</h4>
-                            <p className="text-xs font-mono text-cyan-300 font-bold">+50 BARRIER ARMOR</p>
-                            <p className="text-xs font-sans text-slate-400">Absorbs incoming projectile damage prior to hull integrity damage.</p>
+                            <h4 className="font-display font-bold text-xs sm:text-base text-white">ENERGY SHIELD</h4>
+                            <p className="text-[10px] sm:text-xs font-mono text-cyan-300 font-bold">+50 BARRIER</p>
+                            <p className="text-[11px] sm:text-xs font-sans text-slate-400 hidden sm:block">Absorbs incoming projectile damage prior to hull damage.</p>
                         </div>
 
-                        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 text-center space-y-3 shadow-lg">
-                            <div className="w-14 h-14 mx-auto rounded-xl bg-pink-950 border border-pink-500 flex items-center justify-center text-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.4)]">
-                                <Flame className="w-7 h-7" />
+                        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 sm:p-6 text-center space-y-2 sm:space-y-3 shadow-lg">
+                            <div className="w-10 h-10 sm:w-14 sm:h-14 mx-auto rounded-xl bg-pink-950 border border-pink-500 flex items-center justify-center text-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.4)]">
+                                <Flame className="w-5 h-5 sm:w-7 sm:h-7" />
                             </div>
-                            <h4 className="font-display font-bold text-white">PLASMA OVERDRIVE</h4>
-                            <p className="text-xs font-mono text-pink-300 font-bold">TRIPLE RAPID SHOT</p>
-                            <p className="text-xs font-sans text-slate-400">Fires 3 spread plasma rounds simultaneously at double fire-rate.</p>
+                            <h4 className="font-display font-bold text-xs sm:text-base text-white">OVERDRIVE</h4>
+                            <p className="text-[10px] sm:text-xs font-mono text-pink-300 font-bold">TRIPLE SHOT</p>
+                            <p className="text-[11px] sm:text-xs font-sans text-slate-400 hidden sm:block">Fires 3 spread plasma rounds simultaneously at double fire-rate.</p>
                         </div>
 
-                        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 text-center space-y-3 shadow-lg">
-                            <div className="w-14 h-14 mx-auto rounded-xl bg-amber-950 border border-amber-500 flex items-center justify-center text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)]">
-                                <Zap className="w-7 h-7" />
+                        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 sm:p-6 text-center space-y-2 sm:space-y-3 shadow-lg">
+                            <div className="w-10 h-10 sm:w-14 sm:h-14 mx-auto rounded-xl bg-amber-950 border border-amber-500 flex items-center justify-center text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)]">
+                                <Zap className="w-5 h-5 sm:w-7 sm:h-7" />
                             </div>
-                            <h4 className="font-display font-bold text-white">SPEED BOOSTER</h4>
-                            <p className="text-xs font-mono text-amber-300 font-bold">+45% VELOCITY BOOST</p>
-                            <p className="text-xs font-sans text-slate-400">Supercharges chassis treads for high-speed flanking and evasion.</p>
+                            <h4 className="font-display font-bold text-xs sm:text-base text-white">SPEED BOOST</h4>
+                            <p className="text-[10px] sm:text-xs font-mono text-amber-300 font-bold">+45% VELOCITY</p>
+                            <p className="text-[11px] sm:text-xs font-sans text-slate-400 hidden sm:block">Supercharges chassis treads for high-speed flanking.</p>
                         </div>
 
-                        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 text-center space-y-3 shadow-lg">
-                            <div className="w-14 h-14 mx-auto rounded-xl bg-emerald-950 border border-emerald-500 flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(34,197,94,0.4)]">
-                                <Crosshair className="w-7 h-7" />
+                        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 sm:p-6 text-center space-y-2 sm:space-y-3 shadow-lg">
+                            <div className="w-10 h-10 sm:w-14 sm:h-14 mx-auto rounded-xl bg-emerald-950 border border-emerald-500 flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(34,197,94,0.4)]">
+                                <Crosshair className="w-5 h-5 sm:w-7 sm:h-7" />
                             </div>
-                            <h4 className="font-display font-bold text-white">NANO REPAIR</h4>
-                            <p className="text-xs font-mono text-emerald-300 font-bold">+40 HP RECOVERY</p>
-                            <p className="text-xs font-sans text-slate-400">Instantly patches hull breaches and restores battle durability.</p>
+                            <h4 className="font-display font-bold text-xs sm:text-base text-white">NANO REPAIR</h4>
+                            <p className="text-[10px] sm:text-xs font-mono text-emerald-300 font-bold">+40 HP RECOVERY</p>
+                            <p className="text-[11px] sm:text-xs font-sans text-slate-400 hidden sm:block">Instantly patches hull breaches and restores durability.</p>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* CALL TO ACTION BANNER */}
-            <section className="py-20 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-t border-slate-800">
-                <div className="w-full max-w-4xl mx-auto px-4 text-center space-y-6">
-                    <h2 className="font-display text-3xl sm:text-5xl font-black tracking-wider text-white">
+            <section className="py-12 sm:py-20 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-t border-slate-800">
+                <div className="w-full max-w-4xl mx-auto px-4 text-center space-y-4 sm:space-y-6">
+                    <h2 className="font-display text-2xl sm:text-4xl lg:text-5xl font-black tracking-wider text-white">
                         THE ARENA AWAITS YOUR COMMAND
                     </h2>
-                    <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto">
+                    <p className="text-slate-300 text-xs sm:text-base max-w-xl mx-auto">
                         Join hundreds of matches daily. Master physics-driven recoil, outsmart bot algorithms, and collect the most prestigious tank hulls.
                     </p>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
                         <Link
                             href="/play"
-                            className="px-8 py-4 bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 font-display font-black text-sm rounded-xl shadow-[0_0_25px_rgba(0,240,255,0.5)] flex items-center space-x-2 transition-all transform hover:scale-105"
+                            className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 font-display font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl shadow-[0_0_25px_rgba(0,240,255,0.5)] flex items-center justify-center space-x-2 transition-all transform hover:scale-105"
                         >
                             <Play className="w-4 h-4 fill-current" />
                             <span>LAUNCH ARENA BATTLE</span>
                         </Link>
                         <Link
                             href="/register"
-                            className="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-display font-bold text-sm rounded-xl border border-slate-700 transition-all"
+                            className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-display font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl border border-slate-700 transition-all text-center"
                         >
                             ENLIST CADET ACCOUNT
                         </Link>
@@ -828,20 +942,18 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
             </section>
 
             {/* FOOTER */}
-            <footer className="border-t border-slate-900 bg-slate-950 py-8 text-xs font-mono text-slate-500">
-                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center space-x-2">
-                        <Crosshair className="w-4 h-4 text-cyan-400" />
+            <footer className="border-t border-slate-900 bg-slate-950 py-6 sm:py-8 text-xs font-mono text-slate-500">
+                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+                    <div className="flex items-center space-x-2 justify-center sm:justify-start">
+                        <Crosshair className="w-4 h-4 text-cyan-400 shrink-0" />
                         <span className="text-slate-300 font-bold">BLITZGRID // TACTICAL TANK ARENA</span>
-                        <span className="hidden md:inline text-slate-600">|</span>
-                        <span className="hidden md:inline text-slate-400">30 TPS AUTHORITATIVE GAME ENGINE</span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-6 font-tech text-xs">
-                        <Link href="/terms" className="hover:text-cyan-400 transition-colors">TERMS & CONDITIONS</Link>
-                        <Link href="/privacy" className="hover:text-cyan-400 transition-colors">PRIVACY POLICY</Link>
-                        <Link href="/shop" className="hover:text-cyan-400 transition-colors">ARMORY SHOP</Link>
+                    <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 font-tech text-xs">
+                        <Link href="/terms" className="hover:text-cyan-400 transition-colors">TERMS</Link>
+                        <Link href="/privacy" className="hover:text-cyan-400 transition-colors">PRIVACY</Link>
+                        <Link href="/shop" className="hover:text-cyan-400 transition-colors">SHOP</Link>
                         <Link href="/garage" className="hover:text-cyan-400 transition-colors">GARAGE</Link>
-                        <Link href="/leaderboard" className="hover:text-cyan-400 transition-colors">LEADERBOARD</Link>
+                        <Link href="/leaderboard" className="hover:text-cyan-400 transition-colors">RANKS</Link>
                         <Link href="/login" className="hover:text-cyan-400 transition-colors">LOGIN</Link>
                     </div>
                 </div>
