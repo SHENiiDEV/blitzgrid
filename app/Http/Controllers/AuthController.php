@@ -51,7 +51,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => ['required', 'string'],
+            'email' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string'],
         ]);
 
@@ -63,6 +63,7 @@ class AuthController extends Controller
         if ($user && Hash::check($credentials['password'], $user->password)) {
             Auth::login($user, $request->boolean('remember', true));
             $request->session()->regenerate();
+
             return redirect()->intended(route('dashboard'));
         }
 
@@ -85,7 +86,7 @@ class AuthController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', Password::min(8)->letters()->numbers()],
             'phone' => ['required', 'string', 'max:30'],
-            'date_of_birth' => ['required', 'date', 'before:today'],
+            'date_of_birth' => ['required', 'date', 'before_or_equal:'.now()->subYears(16)->toDateString()],
             'street_address' => ['required', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:100'],
             'country' => [
@@ -130,13 +131,13 @@ class AuthController extends Controller
         try {
             Mail::to($user->email)->send(new WelcomeCadetMail($user));
         } catch (\Throwable $e) {
-            Log::error('Failed sending welcome email to ' . $user->email . ': ' . $e->getMessage());
+            Log::error('Failed sending welcome email to '.$user->email.': '.$e->getMessage());
         }
 
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard')->with('success', 'Cadet registration completed! Welcome to BlitzGrid, Commander ' . $user->username . '!');
+        return redirect()->route('dashboard')->with('success', 'Cadet registration completed! Welcome to BlitzGrid, Commander '.$user->username.'!');
     }
 
     public function logout(Request $request)

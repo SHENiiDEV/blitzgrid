@@ -13,6 +13,7 @@ class GameMatch extends Model
     protected $table = 'matches';
 
     protected $fillable = [
+        'result_id',
         'user_id',
         'player_name',
         'kills',
@@ -28,6 +29,7 @@ class GameMatch extends Model
     protected function casts(): array
     {
         return [
+            'user_id' => 'integer',
             'kills' => 'integer',
             'deaths' => 'integer',
             'damage_dealt' => 'integer',

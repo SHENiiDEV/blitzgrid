@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -33,7 +33,15 @@ class User extends Authenticatable
         'matches_played',
     ];
 
+    protected static function booted(): void
+    {
+        static::addGlobalScope('exclude_demo_accounts', function (Builder $query) {
+            $query->where('is_demo', false);
+        });
+    }
+
     protected $hidden = [
+        'is_demo',
         'password',
         'remember_token',
     ];

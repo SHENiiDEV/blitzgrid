@@ -34,7 +34,7 @@ export class Player extends Tank {
         this.input.a = Boolean(inputState.a);
         this.input.d = Boolean(inputState.d);
 
-        if (typeof inputState.angle === 'number' && !isNaN(inputState.angle)) {
+        if (typeof inputState.angle === 'number' && Number.isFinite(inputState.angle)) {
             this.input.angle = inputState.angle;
         }
 

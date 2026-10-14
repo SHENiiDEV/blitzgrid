@@ -33,19 +33,16 @@ export default function Play({
         });
 
         socketInstance.on('connect', () => {
-            console.log('⚡ Connected to Game Server. Authenticating...');
             setConnected(true);
             setConnectionError(null);
 
             // Join arena
             socketInstance.emit('auth_join', {
                 token: authToken,
-                skin: equippedSkin,
             });
         });
 
         socketInstance.on('init_world', (data) => {
-            console.log('🗺️ World initialized:', data);
             setWorldInit(data);
             setPlayerState(data.tank);
             setShowGameOver(false);
@@ -63,7 +60,6 @@ export default function Play({
         });
 
         socketInstance.on('match_reward', (data) => {
-            console.log('🏆 Match rewards received:', data);
             setMatchRewards(data?.rewards);
         });
 

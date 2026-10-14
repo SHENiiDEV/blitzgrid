@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Skin;
+use App\Models\User;
 use App\Services\SkinUpgradeService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class GarageController extends Controller
@@ -12,7 +14,7 @@ class GarageController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login');
         }
 
@@ -67,81 +69,80 @@ class GarageController extends Controller
 
     public function equip(Request $request, Skin $skin)
     {
-        $user = $request->user();
-        if (!$user) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
+        return DB::transaction(function () use ($request, $skin) {
+            $user = User::query()->lockForUpdate()->findOrFail($request->user()->id);
 
-        // Verify ownership
-        $hasSkin = $user->skins()->where('skin_id', $skin->id)->exists();
-        if (!$hasSkin) {
-            return back()->with('error', 'You do not own this skin yet.');
-        }
+            // Verify ownership
+            $hasSkin = $user->skins()->where('skin_id', $skin->id)->exists();
+            if (! $hasSkin) {
+                return back()->with('error', 'You do not own this skin yet.');
+            }
 
-        // Unequip all
-        $user->skins()->updateExistingPivot(
-            $user->skins()->pluck('skins.id'),
-            ['is_equipped' => false]
-        );
+            // Unequip all
+            $user->skins()->updateExistingPivot(
+                $user->skins()->pluck('skins.id'),
+                ['is_equipped' => false]
+            );
 
-        // Equip the selected skin
-        $user->skins()->updateExistingPivot($skin->id, ['is_equipped' => true]);
+            // Equip the selected skin
+            $user->skins()->updateExistingPivot($skin->id, ['is_equipped' => true]);
 
-        return back()->with('success', "{$skin->name} equipped to combat loadout!");
+            return back()->with('success', "{$skin->name} equipped to combat loadout!");
+        });
     }
 
     public function upgrade(Request $request, Skin $skin)
     {
-        $user = $request->user();
-        if (!$user) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
+        return DB::transaction(function () use ($request, $skin) {
+            $user = User::query()->lockForUpdate()->findOrFail($request->user()->id);
 
-        $userSkin = $user->skins()->where('skin_id', $skin->id)->first();
-        if (!$userSkin) {
-            return back()->with('error', 'You do not own this chassis yet. Acquire it in the Armory Shop.');
-        }
-
-        $maxLevel = SkinUpgradeService::getMaxLevel($skin->rarity);
-        $currentLevel = $userSkin->pivot->level ?? 1;
-        if ($currentLevel >= $maxLevel) {
-            return back()->with('error', "{$skin->name} has already reached MAX Level {$maxLevel}!");
-        }
-
-        $targetStep = $request->input('steps', 1);
-        $stepCount = 0;
-        $totalCoins = 0;
-        $totalGems = 0;
-        $simLevel = $currentLevel;
-
-        $maxSteps = ($targetStep === 'max') ? ($maxLevel - $currentLevel) : (int) $targetStep;
-        $maxSteps = max(1, min($maxLevel - $currentLevel, $maxSteps));
-
-        for ($i = 0; $i < $maxSteps; $i++) {
-            $cost = SkinUpgradeService::calculateUpgradeCost($simLevel, $skin->rarity);
-            if ($user->coins >= ($totalCoins + $cost['coins']) && $user->gems >= ($totalGems + $cost['gems'])) {
-                $totalCoins += $cost['coins'];
-                $totalGems += $cost['gems'];
-                $simLevel++;
-                $stepCount++;
-            } else {
-                break;
+            $userSkin = $user->skins()->where('skin_id', $skin->id)->first();
+            if (! $userSkin) {
+                return back()->with('error', 'You do not own this chassis yet. Acquire it in the Armory Shop.');
             }
-        }
 
-        if ($stepCount === 0) {
-            $singleCost = SkinUpgradeService::calculateUpgradeCost($currentLevel, $skin->rarity);
-            return back()->with('error', "Insufficient resources! Level " . ($currentLevel + 1) . " requires {$singleCost['coins']} Coins and {$singleCost['gems']} Gems.");
-        }
+            $maxLevel = SkinUpgradeService::getMaxLevel($skin->rarity);
+            $currentLevel = $userSkin->pivot->level ?? 1;
+            if ($currentLevel >= $maxLevel) {
+                return back()->with('error', "{$skin->name} has already reached MAX Level {$maxLevel}!");
+            }
 
-        $user->decrement('coins', $totalCoins);
-        $user->decrement('gems', $totalGems);
-        $user->skins()->updateExistingPivot($skin->id, ['level' => $simLevel]);
+            $targetStep = $request->input('steps', 1);
+            $stepCount = 0;
+            $totalCoins = 0;
+            $totalGems = 0;
+            $simLevel = $currentLevel;
 
-        $msg = $stepCount === 1 
-            ? "⚡ UPGRADE COMPLETE! {$skin->name} enhanced to Level {$simLevel}!" 
-            : "⚡ MULTI-TIER UPGRADE! {$skin->name} surged +{$stepCount} levels to Level {$simLevel}!";
+            $maxSteps = ($targetStep === 'max') ? ($maxLevel - $currentLevel) : (int) $targetStep;
+            $maxSteps = max(1, min($maxLevel - $currentLevel, $maxSteps));
 
-        return back()->with('success', $msg);
+            for ($i = 0; $i < $maxSteps; $i++) {
+                $cost = SkinUpgradeService::calculateUpgradeCost($simLevel, $skin->rarity);
+                if ($user->coins >= ($totalCoins + $cost['coins']) && $user->gems >= ($totalGems + $cost['gems'])) {
+                    $totalCoins += $cost['coins'];
+                    $totalGems += $cost['gems'];
+                    $simLevel++;
+                    $stepCount++;
+                } else {
+                    break;
+                }
+            }
+
+            if ($stepCount === 0) {
+                $singleCost = SkinUpgradeService::calculateUpgradeCost($currentLevel, $skin->rarity);
+
+                return back()->with('error', 'Insufficient resources! Level '.($currentLevel + 1)." requires {$singleCost['coins']} Coins and {$singleCost['gems']} Gems.");
+            }
+
+            $user->decrement('coins', $totalCoins);
+            $user->decrement('gems', $totalGems);
+            $user->skins()->updateExistingPivot($skin->id, ['level' => $simLevel]);
+
+            $msg = $stepCount === 1
+                ? "⚡ UPGRADE COMPLETE! {$skin->name} enhanced to Level {$simLevel}!"
+                : "⚡ MULTI-TIER UPGRADE! {$skin->name} surged +{$stepCount} levels to Level {$simLevel}!";
+
+            return back()->with('success', $msg);
+        });
     }
 }

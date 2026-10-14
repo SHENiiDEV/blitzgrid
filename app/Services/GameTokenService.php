@@ -10,7 +10,12 @@ class GameTokenService
 {
     public static function getSecret(): string
     {
-        return config('services.game_server.jwt_secret', 'blitzgrid_super_secret_jwt_key_2026');
+        $secret = config('services.game_server.jwt_secret');
+        if (! is_string($secret) || strlen($secret) < 32) {
+            throw new \RuntimeException('JWT_SECRET must contain at least 32 characters.');
+        }
+
+        return $secret;
     }
 
     /**
@@ -44,38 +49,6 @@ class GameTokenService
             ],
             'iat' => time(),
             'exp' => time() + (3600 * 2), // 2 hours
-        ];
-
-        return JWT::encode($payload, self::getSecret(), 'HS256');
-    }
-
-    /**
-     * Generate guest token for instant play without registration
-     */
-    public static function generateGuestToken(string $guestName): string
-    {
-        $guestId = 'guest_' . bin2hex(random_bytes(4));
-        $payload = [
-            'iss' => 'blitzgrid-portal',
-            'sub' => $guestId,
-            'user_id' => $guestId,
-            'username' => $guestName,
-            'name' => $guestName,
-            'is_guest' => true,
-            'coins' => 0,
-            'gems' => 0,
-            'skin' => [
-                'id' => 1,
-                'name' => 'Neon Vanguard',
-                'slug' => 'neon-vanguard',
-                'color_primary' => '#00f0ff',
-                'color_secondary' => '#ff007f',
-                'color_glow' => '#00f0ff',
-                'bullet_color' => '#00f0ff',
-                'stats' => ['speed' => 1.0, 'fire_rate' => 1.0, 'armor' => 100],
-            ],
-            'iat' => time(),
-            'exp' => time() + 3600,
         ];
 
         return JWT::encode($payload, self::getSecret(), 'HS256');

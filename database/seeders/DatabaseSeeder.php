@@ -2,11 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\GameMatch;
 use App\Models\Skin;
-use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -505,127 +502,12 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
-        $createdSkins = [];
         foreach ($skins as $skinData) {
-            $createdSkins[] = Skin::updateOrCreate(
+            Skin::updateOrCreate(
                 ['slug' => $skinData['slug']],
                 $skinData
             );
         }
 
-        // 2. Create Commander User
-        $commander = User::where('email', 'commander@blitzgrid.io')
-            ->orWhere('username', 'CommanderAlex')
-            ->first();
-
-        $commanderData = [
-            'name' => 'Commander Alex',
-            'surname' => 'Vance',
-            'username' => 'CommanderAlex',
-            'email' => 'commander@blitzgrid.io',
-            'password' => Hash::make('password123'),
-            'phone' => '+15550192834',
-            'date_of_birth' => '1996-05-14',
-            'street_address' => '742 Evergreen Cyber Way, Suite 402',
-            'city' => 'Neo Seattle',
-            'country' => 'United States',
-            'post_code' => '98101',
-            'terms_accepted_at' => now(),
-            'coins' => 2400,
-            'gems' => 150,
-            'kills_total' => 64,
-            'deaths_total' => 14,
-            'matches_played' => 18,
-        ];
-
-        if ($commander) {
-            $commander->update($commanderData);
-        } else {
-            $commander = User::create($commanderData);
-        }
-
-        // Equip default skin (Neon Vanguard) at Level 3 and attach Frost Glitch at Level 2, Iron Behemoth at Level 1
-        $commander->skins()->syncWithoutDetaching([
-            $createdSkins[0]->id => ['is_equipped' => true, 'level' => 3],
-            $createdSkins[4]->id => ['is_equipped' => false, 'level' => 2],
-            $createdSkins[1]->id => ['is_equipped' => false, 'level' => 1],
-        ]);
-
-        // 3. Create Leaderboard rivals
-        $rivals = [
-            ['name' => 'Travis Drake', 'username' => 'CyberStriker', 'email' => 'cyberstriker@blitzgrid.io', 'coins' => 5400, 'gems' => 220, 'kills' => 184, 'deaths' => 38, 'matches' => 45, 'skin_idx' => 31],
-            ['name' => 'Jin Kazama', 'username' => 'NeonGhost', 'email' => 'neonghost@blitzgrid.io', 'coins' => 4800, 'gems' => 195, 'kills' => 142, 'deaths' => 41, 'matches' => 39, 'skin_idx' => 29],
-            ['name' => 'Astrid Lind', 'username' => 'Valkyrie99', 'email' => 'valkyrie99@blitzgrid.io', 'coins' => 3900, 'gems' => 160, 'kills' => 118, 'deaths' => 29, 'matches' => 30, 'skin_idx' => 27],
-            ['name' => 'Eero Virtanen', 'username' => 'QuantumTank', 'email' => 'quantumtank@blitzgrid.io', 'coins' => 2950, 'gems' => 110, 'kills' => 96, 'deaths' => 33, 'matches' => 28, 'skin_idx' => 28],
-            ['name' => 'Chloe Bennett', 'username' => 'ApexGunner', 'email' => 'apexgunner@blitzgrid.io', 'coins' => 2450, 'gems' => 80, 'kills' => 75, 'deaths' => 20, 'matches' => 22, 'skin_idx' => 23],
-        ];
-
-        foreach ($rivals as $rival) {
-            $skinIdx = $rival['skin_idx'] ?? 0;
-            $user = User::where('username', $rival['username'])
-                ->orWhere('email', $rival['email'])
-                ->first();
-
-            $userData = [
-                'name' => $rival['name'],
-                'surname' => 'Rival',
-                'username' => $rival['username'],
-                'email' => $rival['email'],
-                'password' => Hash::make('password123'),
-                'coins' => $rival['coins'],
-                'gems' => $rival['gems'],
-                'kills_total' => $rival['kills'],
-                'deaths_total' => $rival['deaths'],
-                'matches_played' => $rival['matches'],
-                'street_address' => '101 Cyber Plaza',
-                'city' => 'Night City',
-                'country' => 'United States',
-                'post_code' => '90001',
-                'terms_accepted_at' => now(),
-            ];
-
-            if ($user) {
-                $user->update($userData);
-            } else {
-                $user = User::create($userData);
-            }
-
-            $user->skins()->syncWithoutDetaching([
-                $createdSkins[$skinIdx]->id => ['is_equipped' => true, 'level' => rand(3, 7)]
-            ]);
-
-            // Create sample match logs if none exist for this user
-            if (GameMatch::where('user_id', $user->id)->count() === 0) {
-                GameMatch::create([
-                    'user_id' => $user->id,
-                    'player_name' => $user->name,
-                    'kills' => rand(6, 15),
-                    'deaths' => rand(0, 3),
-                    'damage_dealt' => rand(1200, 3400),
-                    'score' => rand(2500, 6800),
-                    'coins_earned' => rand(180, 450),
-                    'gems_earned' => rand(3, 12),
-                    'duration_seconds' => rand(150, 420),
-                    'game_mode' => 'free_for_all',
-                ]);
-            }
-        }
-
-        // Commander's recent matches
-        if (GameMatch::where('user_id', $commander->id)->count() === 0) {
-            GameMatch::create([
-                'user_id' => $commander->id,
-                'player_name' => $commander->name,
-                'kills' => 9,
-                'deaths' => 1,
-                'damage_dealt' => 1850,
-                'score' => 3700,
-                'coins_earned' => 280,
-                'gems_earned' => 8,
-                'duration_seconds' => 210,
-                'game_mode' => 'free_for_all',
-            ]);
-        }
     }
 }
-

@@ -4,8 +4,8 @@ import { Crosshair, Lock, Mail, Shield, UserPlus } from 'lucide-react';
 
 export default function Login() {
     const { data, setData, post, processing, errors } = useForm({
-        email: 'commander@blitzgrid.io',
-        password: 'password123',
+        email: '',
+        password: '',
         remember: true,
     });
 
@@ -58,7 +58,8 @@ export default function Login() {
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
                                 className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 font-mono transition-colors outline-none"
-                                placeholder="commander@blitzgrid.io"
+                                placeholder="Email or callsign"
+                                autoComplete="username"
                                 required
                             />
                         </div>
@@ -75,6 +76,7 @@ export default function Login() {
                             <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
                             <input
                                 type="password"
+                                autoComplete="current-password"
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
                                 className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 font-mono transition-colors outline-none"
@@ -96,13 +98,6 @@ export default function Login() {
                         <span>AUTHORIZE & COMMENCE</span>
                     </button>
                 </form>
-
-                {/* Demo Credentials hint */}
-                <div className="mt-6 p-3 bg-slate-950/80 border border-slate-800 rounded-xl text-[11px] font-mono text-slate-400 space-y-1">
-                    <div className="text-cyan-400 font-bold">Pre-seeded Test Commander:</div>
-                    <div>Email: <strong className="text-white">commander@blitzgrid.io</strong></div>
-                    <div>Password: <strong className="text-white">password123</strong></div>
-                </div>
 
                 {/* Register Link */}
                 <div className="mt-6 pt-4 border-t border-slate-800 text-center text-xs font-mono text-slate-400">

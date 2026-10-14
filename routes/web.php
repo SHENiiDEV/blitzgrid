@@ -6,6 +6,7 @@ use App\Http\Controllers\GameController;
 use App\Http\Controllers\GarageController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\TopupController;
 use App\Models\Skin;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -14,7 +15,7 @@ use Inertia\Inertia;
 // High-Tech Cyberpunk Landing Page
 Route::get('/', function () {
     $skins = Skin::all();
-    $topCommanders = User::orderByDesc('kills_total')->take(5)->get();
+    $topCommanders = User::select('id', 'username', 'kills_total')->orderByDesc('kills_total')->take(5)->get();
 
     return Inertia::render('Welcome', [
         'skins' => $skins,
@@ -39,9 +40,9 @@ Route::get('/refund', function () {
 // Authentication (Guest only)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post')->middleware('throttle:5,1');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+    Route::post('/register', [AuthController::class, 'register'])->name('register.post')->middleware('throttle:3,1');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
@@ -54,9 +55,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/garage/equip/{skin}', [GarageController::class, 'equip'])->name('garage.equip');
     Route::post('/garage/upgrade/{skin}', [GarageController::class, 'upgrade'])->name('garage.upgrade');
     Route::post('/shop/purchase/{skin}', [ShopController::class, 'purchase'])->name('shop.purchase');
-    Route::get('/topup', [\App\Http\Controllers\TopupController::class, 'index'])->name('topup');
-    Route::post('/topup/process', [\App\Http\Controllers\TopupController::class, 'process'])->name('topup.process');
-    Route::get('/topup/invoice/preview', [\App\Http\Controllers\TopupController::class, 'previewInvoice'])->name('topup.invoice.preview');
+    Route::get('/topup', [TopupController::class, 'index'])->name('topup');
+    Route::post('/topup/process', [TopupController::class, 'process'])->name('topup.process');
 });
 
 // Public Informational Routes
@@ -64,7 +64,7 @@ Route::get('/shop', [ShopController::class, 'index'])->name('shop');
 Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
 
 // Real-Time Game Server API Endpoints
-Route::prefix('api/game')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])->group(function () {
-    Route::get('/token', [GameController::class, 'getToken'])->name('api.game.token');
+Route::prefix('api/game')->group(function () {
+    Route::get('/token', [GameController::class, 'getToken'])->name('api.game.token')->middleware(['auth', 'throttle:30,1']);
     Route::post('/match-result', [GameController::class, 'recordMatchResult'])->name('api.game.match_result');
 });

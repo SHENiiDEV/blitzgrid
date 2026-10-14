@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Skin;
+use App\Models\User;
+use App\Services\SkinUpgradeService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ShopController extends Controller
@@ -27,9 +30,9 @@ class ShopController extends Controller
                 'color_glow' => $skin->color_glow,
                 'bullet_color' => $skin->bullet_color,
                 'description' => $skin->description,
-                'max_level' => \App\Services\SkinUpgradeService::getMaxLevel($skin->rarity),
-                'base_stats' => \App\Services\SkinUpgradeService::calculateStats($skin->stats, 1, $skin->rarity),
-                'max_stats' => \App\Services\SkinUpgradeService::calculateStats($skin->stats, \App\Services\SkinUpgradeService::getMaxLevel($skin->rarity), $skin->rarity),
+                'max_level' => SkinUpgradeService::getMaxLevel($skin->rarity),
+                'base_stats' => SkinUpgradeService::calculateStats($skin->stats, 1, $skin->rarity),
+                'max_stats' => SkinUpgradeService::calculateStats($skin->stats, SkinUpgradeService::getMaxLevel($skin->rarity), $skin->rarity),
                 'stats' => $skin->stats,
                 'is_owned' => in_array($skin->id, $ownedSkinIds),
             ];
@@ -46,38 +49,37 @@ class ShopController extends Controller
 
     public function purchase(Request $request, Skin $skin)
     {
-        $user = $request->user();
-        if (!$user) {
-            return redirect()->route('login');
-        }
+        return DB::transaction(function () use ($request, $skin) {
+            $user = User::query()->lockForUpdate()->findOrFail($request->user()->id);
 
-        // Check if already owned
-        if ($user->skins()->where('skin_id', $skin->id)->exists()) {
-            return back()->with('error', 'You already own this skin.');
-        }
-
-        $currency = $request->input('currency', 'coins'); // 'coins' or 'gems'
-
-        if ($currency === 'coins') {
-            if ($user->coins < $skin->price_coins) {
-                return back()->with('error', 'Insufficient Cyber Coins. Battle more in the arena!');
+            // Check if already owned
+            if ($user->skins()->where('skin_id', $skin->id)->exists()) {
+                return back()->with('error', 'You already own this skin.');
             }
-            $user->decrement('coins', $skin->price_coins);
-        } elseif ($currency === 'gems') {
-            if ($skin->price_gems <= 0) {
-                return back()->with('error', 'This skin cannot be purchased with gems.');
-            }
-            if ($user->gems < $skin->price_gems) {
-                return back()->with('error', 'Insufficient Quantum Gems.');
-            }
-            $user->decrement('gems', $skin->price_gems);
-        } else {
-            return back()->with('error', 'Invalid currency selected.');
-        }
 
-        // Attach skin to user inventory at Level 1
-        $user->skins()->attach($skin->id, ['is_equipped' => false, 'level' => 1]);
+            $currency = $request->input('currency', 'coins'); // 'coins' or 'gems'
 
-        return back()->with('success', "Congratulations! {$skin->name} added to your Armory.");
+            if ($currency === 'coins') {
+                if ($user->coins < $skin->price_coins) {
+                    return back()->with('error', 'Insufficient Cyber Coins. Battle more in the arena!');
+                }
+                $user->decrement('coins', $skin->price_coins);
+            } elseif ($currency === 'gems') {
+                if ($skin->price_gems <= 0) {
+                    return back()->with('error', 'This skin cannot be purchased with gems.');
+                }
+                if ($user->gems < $skin->price_gems) {
+                    return back()->with('error', 'Insufficient Quantum Gems.');
+                }
+                $user->decrement('gems', $skin->price_gems);
+            } else {
+                return back()->with('error', 'Invalid currency selected.');
+            }
+
+            // Attach skin to user inventory at Level 1
+            $user->skins()->attach($skin->id, ['is_equipped' => false, 'level' => 1]);
+
+            return back()->with('success', "Congratulations! {$skin->name} added to your Armory.");
+        });
     }
 }

@@ -1,10 +1,19 @@
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ path: new URL('../../.env', import.meta.url) });
+
+for (const key of ['JWT_SECRET', 'GAME_SERVER_API_SECRET']) {
+    if (!process.env[key] || process.env[key].length < 32) {
+        throw new Error(`${key} must contain at least 32 characters.`);
+    }
+}
 
 export const CONFIG = {
     PORT: process.env.PORT || 3001,
     LARAVEL_API_URL: process.env.LARAVEL_API_URL || 'http://127.0.0.1:8000/api/game',
-    JWT_SECRET: process.env.JWT_SECRET || 'blitzgrid_super_secret_jwt_key_2026',
+    JWT_SECRET: process.env.JWT_SECRET,
+    GAME_SERVER_API_SECRET: process.env.GAME_SERVER_API_SECRET,
+    HOST: process.env.HOST || '127.0.0.1',
+    ALLOWED_ORIGINS: (process.env.APP_URL || 'http://localhost:8000').split(','),
 
     // Game Loop
     TPS: 30,

@@ -1,103 +1,32 @@
 import React from 'react';
-import { Head, Link } from '@inertiajs/react';
-import { Crosshair, ArrowLeft, ShieldCheck, Lock } from 'lucide-react';
-import Footer from '@/Components/Footer';
+import { usePage } from '@inertiajs/react';
+import LegalLayout, { LegalSection, LegalContact } from '@/Layouts/LegalLayout';
+
+const sections = [
+    { id: 'controller', title: 'Who handles your information' },
+    { id: 'data-collected', title: 'Information we collect' },
+    { id: 'purposes', title: 'How & why we use it' },
+    { id: 'public-profile', title: 'Public player information' },
+    { id: 'cookies', title: 'Cookies & browser storage' },
+    { id: 'sharing', title: 'Service providers & transfers' },
+    { id: 'retention', title: 'Retention & security' },
+    { id: 'rights', title: 'Your privacy rights' },
+    { id: 'children', title: 'Young players & updates' },
+];
 
 export default function Privacy() {
-    return (
-        <div className="min-h-screen bg-[#030712] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-black font-sans bg-cyber-grid">
-            <Head title="Privacy Policy // BLITZGRID" />
+    const { company = {} } = usePage().props;
+    const content = [
+        <><p>{company.name || 'The BlitzGrid operator'} is responsible for the personal information processed to operate this service. Published company and contact details are shown below when available.</p><p>This notice covers the website, accounts, multiplayer gameplay and related support. Contact <LegalContact subject="Privacy request" /> with questions about your information.</p></>,
+        <><p>We collect information you provide when registering: name and surname, username, email, telephone number, date of birth and address, including city, country and postal code. We also store your password as a hash and the time you accepted the terms.</p><p>Account and gameplay records include virtual currency balances, owned and equipped skins, progression, kills, deaths, matches and rankings. Purchase features may generate transaction references and receipt details.</p><p>Operating the site also involves session identifiers, connection information and diagnostic or security logs, which may contain IP addresses, request details and account identifiers. If you contact support, we receive the information you include.</p></>,
+        <><p>We use account and gameplay information to provide the service, authenticate players, maintain balances and rankings, deliver items and send service messages. Where data protection law requires a legal basis, processing necessary to provide the agreed service relies on performance of our contract.</p><p>Security monitoring, fraud prevention, troubleshooting and investigating abuse support our legitimate interests in a safe and reliable game, balanced against your rights. Records required by tax, accounting or other applicable laws are processed to meet legal obligations.</p><p>Where a feature requires consent, you can withdraw that consent without affecting earlier lawful processing. We do not sell personal information. We do not use the contact details collected at registration as automatic permission to send marketing.</p></>,
+        <><p>Leaderboards and gameplay can show your player identity, country, rank, match statistics and selected cosmetic items to other players or site visitors. Choose a username that does not reveal information you want to keep private.</p><p>Your password, telephone number, date of birth, street address and private support correspondence are not intended to be public profile information.</p></>,
+        <><p>The site uses essential session cookies to keep requests associated with your account and security cookies or tokens to protect against forged requests. Choosing persistent sign-in can also create a cookie that remembers your login.</p><p>Session lifetime depends on the service’s configuration; persistent login cookies may last longer. You can inspect names, expiry times and stored data in your browser settings, and delete or block cookies there. Blocking essential cookies may prevent login and other account features.</p><p>The current application does not include a dedicated advertising or analytics tracker. If optional tracking is introduced, this notice and any required consent controls must be updated before it is enabled. Fonts are requested from Google Fonts; your browser shares connection information with that provider when loading them.</p></>,
+        <><p>Hosting, game infrastructure, transactional email and support providers may process information needed to deliver their services. If a real payment provider is used, it processes the payment information you submit under its own privacy notice; a payment logo does not itself establish that integration.</p><p>We may disclose information when legally required or where necessary to investigate fraud, protect users or defend legal rights. Information may be handled outside your country depending on provider locations. Where applicable law requires safeguards for international transfers, those safeguards must be in place; you can request details using the contact information below.</p></>,
+        <><p>We keep account information while needed to operate your account. Purchase and support records may be retained longer to meet legal obligations, resolve disputes and prevent fraud. Retention depends on the record’s purpose and applicable law rather than a single period for all information.</p><p>When information is no longer needed, it should be deleted or anonymised, subject to necessary backup retention. Password hashing, access controls and session security help protect accounts; no system can guarantee absolute security. Use a unique password and report suspicious access promptly.</p></>,
+        <><p>Depending on the law that applies to you, you may request access, correction, deletion, restriction, portability or object to certain processing. You may also withdraw consent where processing depends on it and complain to your local data protection authority.</p><p>Send requests to <LegalContact subject="Personal data request" />. Include your account username and the action you request. We may need proportionate identity verification before disclosing or deleting information. Do not send passwords or full payment card details. We will respond within the period required by applicable law and explain any lawful limits on your request.</p></>,
+        <><p>BlitzGrid is not intended for children under 16. If you believe a child below this age has provided personal information, contact us so we can investigate and take appropriate action.</p><p>We update this notice when our processing changes. The date above shows the latest revision. Material changes will be communicated through an appropriate service notice.</p></>,
+    ];
 
-            <div className="h-1.5 w-full bg-gradient-to-r from-cyan-400 via-pink-500 to-amber-400 shadow-[0_0_20px_rgba(0,240,255,0.7)]"></div>
-
-            <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-                    <Link href="/" className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 p-0.5 shadow-md">
-                            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                                <Crosshair className="w-6 h-6 text-cyan-400" />
-                            </div>
-                        </div>
-                        <span className="font-display font-black text-2xl tracking-wider text-white">
-                            BLITZ<span className="text-pink-500">GRID</span>
-                        </span>
-                    </Link>
-
-                    <Link
-                        href="/register"
-                        className="px-4 py-2 bg-slate-900 border border-slate-700 hover:border-cyan-500 text-cyan-400 text-xs font-mono font-bold rounded-xl flex items-center space-x-1.5 transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        <span>BACK TO REGISTRATION</span>
-                    </Link>
-                </div>
-            </header>
-
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-1">
-                <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 sm:p-12 shadow-2xl space-y-8 backdrop-blur-xl">
-                    
-                    <div className="space-y-2 border-b border-slate-800 pb-6">
-                        <div className="inline-flex items-center space-x-2 text-xs font-mono text-cyan-400 uppercase tracking-widest">
-                            <Lock className="w-4 h-4" />
-                            <span>DATA PROTECTION & PRIVACY POLICY</span>
-                        </div>
-                        <h1 className="font-display text-3xl sm:text-4xl font-black text-white">
-                            PRIVACY POLICY
-                        </h1>
-                        <p className="text-xs font-mono text-slate-400">
-                            Effective Date: September 14, 2026 | Last Updated: 2026-09-14
-                        </p>
-                    </div>
-
-                    <div className="space-y-6 text-sm text-slate-300 leading-relaxed font-sans">
-                        <section className="space-y-3">
-                            <h2 className="font-display text-lg font-bold text-cyan-400">
-                                1. Information We Collect
-                            </h2>
-                            <p>
-                                When registering an account or initiating payments on BlitzGrid, we collect required personal details including your full name, email address, phone number, date of birth, and billing address (street, city, country, postal code) to comply with international anti-money laundering (AML) and payment gateway standards.
-                            </p>
-                        </section>
-
-                        <section className="space-y-3">
-                            <h2 className="font-display text-lg font-bold text-cyan-400">
-                                2. How We Use Your Data
-                            </h2>
-                            <ul className="list-disc pl-5 space-y-1 text-slate-400 font-mono text-xs">
-                                <li>Authenticate match tokens and session states with the real-time game server.</li>
-                                <li>Process secure transactions and inventory acquisitions through verified gateways.</li>
-                                <li>Maintain global leaderboard integrity and prevent fraudulent accounts.</li>
-                                <li>Provide account recovery and critical security alerts.</li>
-                            </ul>
-                        </section>
-
-                        <section className="space-y-3">
-                            <h2 className="font-display text-lg font-bold text-cyan-400">
-                                3. Data Protection & Encryption
-                            </h2>
-                            <p>
-                                All sensitive data, authentication tokens, and passwords are encrypted using state-of-the-art bcrypt hashing and SHA-256 HMAC cryptographic signatures. We do not sell or monetize personal player telemetry.
-                            </p>
-                        </section>
-
-                        <section className="space-y-3">
-                            <h2 className="font-display text-lg font-bold text-cyan-400">
-                                4. Your Rights
-                            </h2>
-                            <p>
-                                You have the right to request access to your personal data, rectify inaccuracies, or request account and data deletion at any time by contacting our compliance officers.
-                            </p>
-                        </section>
-                    </div>
-
-                    <div className="pt-6 border-t border-slate-800 flex justify-between items-center text-xs font-mono text-slate-500">
-                        <span>GDPR & CCPA COMPLIANT PLATFORM</span>
-                        <Link href="/terms" className="text-cyan-400 hover:underline">VIEW TERMS & CONDITIONS</Link>
-                    </div>
-                </div>
-            </main>
-
-            <Footer />
-        </div>
-    );
+    return <LegalLayout title="Privacy & Cookies" summary="What information BlitzGrid uses, how cookies support your account and how to exercise your privacy rights." path="/privacy" sections={sections}>{sections.map((section, index) => <LegalSection key={section.id} {...section} number={index + 1}>{content[index]}</LegalSection>)}</LegalLayout>;
 }

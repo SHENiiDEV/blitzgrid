@@ -1,10 +1,11 @@
+import { randomUUID } from 'node:crypto';
 import axios from 'axios';
 import { CONFIG } from '../config.js';
 import { validateGameToken } from '../auth/tokenValidator.js';
 import { Player } from '../entities/Player.js';
 
 export async function syncPlayerMatchStats(player, socket = null) {
-    if (!player) return null;
+    if (!player || player.syncInFlight) return null;
 
     const deltaKills = Math.max(0, player.kills - (player.lastSavedKills || 0));
     const deltaDeaths = Math.max(0, player.deaths - (player.lastSavedDeaths || 0));
@@ -12,13 +13,13 @@ export async function syncPlayerMatchStats(player, socket = null) {
     const deltaScore = Math.max(0, player.score - (player.lastSavedScore || 0));
     const durationSeconds = Math.max(1, Math.round((Date.now() - (player.lastSavedAt || player.joinedAt)) / 1000));
 
-    // Only sync if there is meaningful delta or duration
-    if (deltaKills === 0 && deltaDeaths === 0 && deltaScore === 0 && durationSeconds < 5) {
+    // Idle requests cannot create participation rewards.
+    if (deltaKills === 0 && deltaDeaths === 0 && deltaScore === 0 && deltaDamage === 0) {
         return null;
     }
 
-    const payload = {
-        token: player.rawToken,
+    const payload = player.pendingResult || {
+        result_id: randomUUID(),
         user_id: player.userId,
         player_name: player.name,
         kills: deltaKills,
@@ -28,22 +29,25 @@ export async function syncPlayerMatchStats(player, socket = null) {
         duration_seconds: durationSeconds,
     };
 
+    player.pendingResult = payload;
+    player.syncInFlight = true;
+
     try {
         const response = await axios.post(`${CONFIG.LARAVEL_API_URL}/match-result`, payload, {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
+                'Authorization': `Bearer ${CONFIG.GAME_SERVER_API_SECRET}`,
             },
             timeout: 5000,
         });
 
-        player.lastSavedKills = player.kills;
-        player.lastSavedDeaths = player.deaths;
-        player.lastSavedDamage = player.damageDealt;
-        player.lastSavedScore = player.score;
+        player.lastSavedKills = (player.lastSavedKills || 0) + payload.kills;
+        player.lastSavedDeaths = (player.lastSavedDeaths || 0) + payload.deaths;
+        player.lastSavedDamage = (player.lastSavedDamage || 0) + payload.damage_dealt;
+        player.lastSavedScore = (player.lastSavedScore || 0) + payload.score;
         player.lastSavedAt = Date.now();
-
-        console.log(`📊 Match stats synced for ${player.name}: +${deltaKills} Kills, +${deltaDeaths} Deaths, +${deltaScore} Score. DB Total Kills: ${response.data?.user?.kills_total}`);
+        player.pendingResult = null;
 
         if (socket && response.data?.rewards) {
             socket.emit('match_reward', response.data);
@@ -51,8 +55,10 @@ export async function syncPlayerMatchStats(player, socket = null) {
 
         return response.data;
     } catch (err) {
-        console.error(`⚠️ Failed to report match stats to Laravel API:`, err.response?.data || err.message);
+        console.error('Failed to report match stats:', err.response?.status || err.code);
         return null;
+    } finally {
+        player.syncInFlight = false;
     }
 }
 
@@ -65,7 +71,7 @@ export function setupSocketHandlers(io, world) {
         // 1. Client Authentication & Join
         socket.on('auth_join', (data) => {
             const token = data?.token;
-            const clientSkin = data?.skin;
+            if (player) return;
 
             const auth = validateGameToken(token);
             if (!auth) {
@@ -75,7 +81,7 @@ export function setupSocketHandlers(io, world) {
 
             const playerId = `player_${socket.id.substring(0, 6)}`;
             const playerName = auth.username || auth.name || 'Commander';
-            const skin = clientSkin || auth.skin;
+            const skin = auth.skin;
 
             player = new Player({
                 id: playerId,
@@ -85,7 +91,6 @@ export function setupSocketHandlers(io, world) {
                 skin: skin,
                 isGuest: Boolean(auth.is_guest),
             });
-            player.rawToken = token;
 
             world.addPlayer(player);
 
@@ -110,7 +115,7 @@ export function setupSocketHandlers(io, world) {
 
         // 3. Report Death / Sync In-Game Progress
         socket.on('report_death', async () => {
-            if (player) {
+            if (player && player.isDead) {
                 await syncPlayerMatchStats(player, socket);
             }
         });

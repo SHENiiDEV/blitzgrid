@@ -55,7 +55,7 @@ class LeaderboardController extends Controller
             ];
         });
 
-        $recentGlobalMatches = GameMatch::with('user')
+        $recentGlobalMatches = GameMatch::whereHas('user')->with('user')
             ->latest()
             ->take(20)
             ->get()

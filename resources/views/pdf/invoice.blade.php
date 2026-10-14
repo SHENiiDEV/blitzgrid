@@ -187,7 +187,7 @@
                     Domain: <strong>blitzgrid.co.uk</strong><br>
                     Merchant Category: Digital Virtual Currency Services<br>
                     Support & Inquiries: <strong>info@blitzgrid.co.uk</strong><br>
-                    Platform Security: 256-bit TLS / PCI DSS Compliant
+                    BlitzGrid digital content receipt
                 </div>
             </td>
             <!-- Customer & Invoice Metadata -->

@@ -2,29 +2,16 @@ import jwt from 'jsonwebtoken';
 import { CONFIG } from '../config.js';
 
 export function validateGameToken(token) {
-    if (!token) return null;
+    if (typeof token !== 'string' || token.length > 8192) return null;
 
     try {
-        const decoded = jwt.verify(token, CONFIG.JWT_SECRET);
+        const decoded = jwt.verify(token, CONFIG.JWT_SECRET, {
+            algorithms: ['HS256'],
+            issuer: 'blitzgrid-portal',
+        });
+        if (!Number.isSafeInteger(decoded.user_id) || decoded.user_id <= 0 || decoded.is_guest || !Number.isFinite(decoded.exp)) return null;
         return decoded;
-    } catch (err) {
-        // Support dev mock tokens for testing
-        if (token.startsWith('mock_')) {
-            return {
-                user_id: 'mock_user',
-                username: token.replace('mock_', 'Player_'),
-                name: token.replace('mock_', 'Player '),
-                skin: {
-                    name: 'Neon Vanguard',
-                    slug: 'neon-vanguard',
-                    color_primary: '#00f0ff',
-                    color_secondary: '#ff007f',
-                    color_glow: '#00f0ff',
-                    bullet_color: '#00f0ff',
-                },
-            };
-        }
-        console.warn('⚠️ Token validation failed:', err.message);
+    } catch {
         return null;
     }
 }

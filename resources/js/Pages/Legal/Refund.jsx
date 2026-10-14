@@ -1,106 +1,27 @@
 import React from 'react';
-import { Head, Link } from '@inertiajs/react';
-import { Crosshair, ArrowLeft, RefreshCw, ShieldCheck, Mail, AlertTriangle } from 'lucide-react';
-import Footer from '@/Components/Footer';
+import { Link } from '@inertiajs/react';
+import LegalLayout, { LegalSection, LegalContact } from '@/Layouts/LegalLayout';
+
+const sections = [
+    { id: 'scope', title: 'What this policy covers' },
+    { id: 'delivery', title: 'Digital delivery' },
+    { id: 'cancellation', title: 'Cancellation & consumer rights' },
+    { id: 'purchase-issues', title: 'Missing items & billing errors' },
+    { id: 'request', title: 'How to request help or a refund' },
+    { id: 'processing', title: 'Review & repayment' },
+    { id: 'account-closure', title: 'Account closure & disputes' },
+];
 
 export default function Refund() {
-    return (
-        <div className="min-h-screen bg-[#030712] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-black font-sans bg-cyber-grid">
-            <Head title="Refund & Cancellation Policy // BLITZGRID" />
+    const content = [
+        <><p>This policy covers paid BlitzGrid digital content, including Cyber Coins, Quantum Gems and virtual items. It should be read with the <Link href="/terms" className="text-cyan-400 hover:underline">Terms & Conditions</Link>.</p><p>It applies when a real payment has been collected. Free rewards, promotional balances and demonstration transactions do not create a cash refund entitlement. Your statutory rights take priority over this policy.</p></>,
+        <><p>Virtual currency and items are delivered to the account used for the purchase after successful processing. Check your balance, garage and any receipt before retrying a transaction.</p><p>If a payment is shown as pending, check its status with your payment provider. Do not repeat a purchase just because delivery is delayed. Contact us if a confirmed payment has not produced the expected items.</p></>,
+        <><p>You may have a statutory right to cancel a distance purchase, including a 14-day cancellation period where applicable. Rights depend on your location and the type of content or service purchased.</p><p>For digital content supplied immediately, a cancellation right may be lost only where applicable law permits it and the required express consent and acknowledgement were obtained before supply began. Delivery or use alone does not automatically establish a valid waiver.</p><p>Content that is faulty, not supplied or not as described may give you rights to a remedy, replacement, price reduction or refund. We assess those rights separately from a change-of-mind request.</p></>,
+        <><p>Contact us about duplicate charges, incorrect amounts, items credited to the wrong account or content that was not delivered as described. Include enough information to locate the transaction.</p><p>If you suspect an unauthorised payment, secure your account and notify your bank or payment provider promptly as well as contacting us. We will investigate the service records available to us. Using an item does not remove rights relating to fraud, defects or incorrect supply.</p></>,
+        <><p>Send a request to <LegalContact subject="Refund or cancellation request" />. Include:</p><ul className="list-disc pl-5 space-y-2"><li>Your username and the email associated with the account.</li><li>The transaction or receipt reference, purchase date, amount and currency.</li><li>The package or item involved and a description of the issue.</li><li>Whether you are requesting delivery assistance, cancellation or a refund.</li></ul><p>For cancellation, a clear statement that you wish to cancel is sufficient; no special wording is required. Never send passwords, security codes or full card numbers. Redact unrelated details from screenshots.</p></>,
+        <><p>We will review the purchase and explain the outcome, including any additional information needed. We may first correct a delivery or billing error where appropriate, without limiting other remedies available by law.</p><p>Approved refunds are returned through the original payment method where possible, unless another lawful method is agreed. We will meet applicable repayment deadlines; the time it takes for a credit to appear also depends on your bank or payment provider. We do not promise a fixed bank processing time.</p><p>Currency or items linked to a refunded transaction may be removed or adjusted to reflect the repayment. Any adjustment will relate to that transaction and will be explained where relevant.</p></>,
+        <><p>Closing an account or receiving a fair-play restriction does not automatically cancel a purchase. We consider any remaining statutory rights and unresolved purchase issues separately.</p><p>If you disagree with a decision, reply with the transaction reference and the reason you are requesting a review. This policy does not prevent you from contacting your payment provider, a consumer protection body or another dispute channel available under applicable law.</p></>,
+    ];
 
-            <div className="h-1.5 w-full bg-gradient-to-r from-amber-400 via-pink-500 to-cyan-400 shadow-[0_0_20px_rgba(245,158,11,0.7)]"></div>
-
-            <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-                    <Link href="/" className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 p-0.5 shadow-md">
-                            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                                <Crosshair className="w-6 h-6 text-cyan-400" />
-                            </div>
-                        </div>
-                        <span className="font-display font-black text-2xl tracking-wider text-white">
-                            BLITZ<span className="text-pink-500">GRID</span>
-                        </span>
-                    </Link>
-
-                    <Link
-                        href="/"
-                        className="px-4 py-2 bg-slate-900 border border-slate-700 hover:border-cyan-500 text-cyan-400 text-xs font-mono font-bold rounded-xl flex items-center space-x-1.5 transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        <span>RETURN TO ARENA</span>
-                    </Link>
-                </div>
-            </header>
-
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-1">
-                <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-12 shadow-2xl space-y-8 backdrop-blur-xl">
-                    
-                    <div className="space-y-2 border-b border-slate-800 pb-6">
-                        <div className="inline-flex items-center space-x-2 text-xs font-mono text-amber-400 uppercase tracking-widest">
-                            <RefreshCw className="w-4 h-4" />
-                            <span>BILLING DIRECTIVE // PROTOCOL 2026.4</span>
-                        </div>
-                        <h1 className="font-display text-3xl sm:text-4xl font-black text-white">
-                            REFUND & CANCELLATION POLICY
-                        </h1>
-                        <p className="text-xs font-mono text-slate-400">
-                            Effective Date: September 14, 2026 | Operator: blitzgrid.co.uk
-                        </p>
-                    </div>
-
-                    <div className="space-y-6 text-sm text-slate-300 leading-relaxed font-sans">
-                        <section className="space-y-3">
-                            <h2 className="font-display text-lg font-bold text-amber-400">
-                                1. Digital Goods & Virtual In-Game Currencies
-                            </h2>
-                            <p>
-                                BlitzGrid provides access to digital services, including virtual chassis skins, Cyber Coins, Quantum Gems, and cosmetic enhancements. All virtual purchases are delivered instantaneously to your commander treasury upon successful payment authorization.
-                            </p>
-                        </section>
-
-                        <section className="space-y-3">
-                            <h2 className="font-display text-lg font-bold text-amber-400">
-                                2. Refund Eligibility
-                            </h2>
-                            <p>
-                                Due to the immediate delivery nature of digital in-game assets, purchases are generally final once the digital items have been credited or consumed. However, refunds may be granted under the following circumstances:
-                            </p>
-                            <ul className="list-disc list-inside space-y-2 text-slate-300 pl-2 font-mono text-xs">
-                                <li><strong>Technical Billing Error:</strong> Duplicate charges or incorrect billing amounts resulting from payment gateway synchronization issues.</li>
-                                <li><strong>Undelivered In-Game Assets:</strong> If payment was settled but corresponding Cyber Coins or Gems were not added within 24 hours and could not be resolved by support.</li>
-                                <li><strong>Fraudulent / Unauthorized Transactions:</strong> Promptly reported transactions made without the cardholder's consent.</li>
-                            </ul>
-                        </section>
-
-                        <section className="space-y-3">
-                            <h2 className="font-display text-lg font-bold text-amber-400">
-                                3. How to Request a Refund or Dispute
-                            </h2>
-                            <p>
-                                To request a review of your transaction, please email our billing department with your transaction details:
-                            </p>
-                            <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2 font-mono text-xs">
-                                <div className="text-cyan-400 font-bold">CONTACT BILLING SUPPORT:</div>
-                                <div>Email: <a href="mailto:info@blitzgrid.co.uk" className="text-amber-400 underline">info@blitzgrid.co.uk</a></div>
-                                <div>Required Details: Pilot Call-Sign, Email, Transaction ID (from receipt), and Reason for Request.</div>
-                            </div>
-                        </section>
-
-                        <section className="space-y-3">
-                            <h2 className="font-display text-lg font-bold text-amber-400">
-                                4. Processing Time
-                            </h2>
-                            <p>
-                                Approved refunds are typically processed within 5–10 business days depending on your issuing bank (Visa / Mastercard network processing). Refunds are issued exclusively back to the original payment method used for the initial purchase.
-                            </p>
-                        </section>
-                    </div>
-
-                </div>
-            </main>
-
-            <Footer />
-        </div>
-    );
+    return <LegalLayout title="Refunds & Cancellation" summary="Clear steps for purchase problems, digital delivery, cancellation and refunds." path="/refund" sections={sections}>{sections.map((section, index) => <LegalSection key={section.id} {...section} number={index + 1}>{content[index]}</LegalSection>)}</LegalLayout>;
 }

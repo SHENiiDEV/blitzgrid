@@ -922,7 +922,7 @@ export default function Welcome({ skins = [], topCommanders = [], isAuthenticate
                         THE ARENA AWAITS YOUR COMMAND
                     </h2>
                     <p className="text-slate-300 text-xs sm:text-base max-w-xl mx-auto">
-                        Join hundreds of matches daily. Master physics-driven recoil, outsmart bot algorithms, and collect the most prestigious tank hulls.
+                        Enter the arena. Master physics-driven recoil, outsmart bot algorithms, and collect the most prestigious tank hulls.
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
                         <Link

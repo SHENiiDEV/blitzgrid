@@ -37,7 +37,8 @@ return [
 
     'game_server' => [
         'url' => env('GAME_SERVER_URL', 'http://localhost:3001'),
-        'jwt_secret' => env('JWT_SECRET', 'blitzgrid_super_secret_jwt_key_2026'),
+        'jwt_secret' => env('JWT_SECRET'),
+        'api_secret' => env('GAME_SERVER_API_SECRET'),
     ],
 
 ];

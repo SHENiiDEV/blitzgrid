@@ -9,8 +9,8 @@ Group=www-data
 WorkingDirectory=/var/www/blitzgrid/server
 Environment=NODE_ENV=production
 Environment=PORT=3001
-Environment=LARAVEL_API_URL=http://127.0.0.1:80/api/game
-Environment=JWT_SECRET=blitzgrid_super_secret_jwt_key_2026
+Environment=LARAVEL_API_URL=https://blitzgrid.co.uk/api/game
+EnvironmentFile=/var/www/blitzgrid/.env
 ExecStart=/usr/bin/node src/index.js
 Restart=always
 RestartSec=5

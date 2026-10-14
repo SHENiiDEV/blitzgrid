@@ -8,7 +8,7 @@ import { GameLoop } from './engine/GameLoop.js';
 import { setupSocketHandlers } from './socket/handler.js';
 
 const app = express();
-app.use(cors({ origin: '*' }));
+app.use(cors({ origin: CONFIG.ALLOWED_ORIGINS }));
 app.use(express.json());
 
 // Health & Status endpoint
@@ -29,7 +29,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: '*',
+        origin: CONFIG.ALLOWED_ORIGINS,
         methods: ['GET', 'POST'],
     },
     transports: ['websocket', 'polling'],
@@ -45,7 +45,7 @@ setupSocketHandlers(io, world);
 // Start Tick Loop & Server
 gameLoop.start();
 
-server.listen(CONFIG.PORT, () => {
+server.listen(CONFIG.PORT, CONFIG.HOST, () => {
     console.log(`=========================================`);
     console.log(`⚡ BLITZGRID REAL-TIME GAME SERVER`);
     console.log(`📡 Listening on: http://localhost:${CONFIG.PORT}`);

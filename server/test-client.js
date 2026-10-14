@@ -1,5 +1,7 @@
 import { io } from 'socket.io-client';
 
+if (!process.env.GAME_TOKEN) throw new Error('Provide a signed GAME_TOKEN from your own account.');
+
 console.log('Connecting to BlitzGrid Game Server...');
 const socket = io('http://localhost:3001', {
     transports: ['websocket'],
@@ -8,14 +10,7 @@ const socket = io('http://localhost:3001', {
 socket.on('connect', () => {
     console.log('Connected to server with ID:', socket.id);
     socket.emit('auth_join', {
-        token: 'mock_commander',
-        skin: {
-            name: 'Neon Vanguard',
-            color_primary: '#00f0ff',
-            color_secondary: '#ff007f',
-            color_glow: '#00f0ff',
-            bullet_color: '#00f0ff',
-        },
+        token: process.env.GAME_TOKEN,
     });
 });
 

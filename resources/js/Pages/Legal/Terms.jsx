@@ -1,109 +1,34 @@
 import React from 'react';
-import { Head, Link } from '@inertiajs/react';
-import { Crosshair, ArrowLeft, ShieldCheck, FileText } from 'lucide-react';
-import Footer from '@/Components/Footer';
+import { Link, usePage } from '@inertiajs/react';
+import LegalLayout, { LegalSection, LegalContact } from '@/Layouts/LegalLayout';
+
+const sections = [
+    { id: 'operator', title: 'About these terms' },
+    { id: 'eligibility', title: 'Eligibility & your account' },
+    { id: 'gameplay', title: 'The game & availability' },
+    { id: 'anti-cheat', title: 'Fair play & anti-cheat' },
+    { id: 'virtual-items', title: 'Virtual currency & items' },
+    { id: 'payments', title: 'Purchases & refunds' },
+    { id: 'intellectual-property', title: 'Intellectual property' },
+    { id: 'suspension', title: 'Suspension & account closure' },
+    { id: 'liability', title: 'Responsibility & your rights' },
+    { id: 'changes', title: 'Changes & complaints' },
+];
 
 export default function Terms() {
-    return (
-        <div className="min-h-screen bg-[#030712] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-black font-sans bg-cyber-grid">
-            <Head title="Terms & Conditions // BLITZGRID" />
+    const { company = {} } = usePage().props;
+    const content = [
+        <><p>These terms apply to your use of BlitzGrid, its multiplayer tank arena, player accounts, garage, shop and virtual currency features. The service is operated by {company.name || 'the BlitzGrid operator'}, whose published company details appear below when available.</p><p>By creating an account or using the service, you agree to these terms. The <Link href="/privacy" className="text-cyan-400 hover:underline">Privacy & Cookies Policy</Link> explains how personal information is used; the <Link href="/refund" className="text-cyan-400 hover:underline">Refund & Cancellation Policy</Link> explains purchase issues and cancellation rights.</p></>,
+        <><p>You must be at least 16 and legally able to enter into this agreement. If local law requires a parent or guardian’s permission, obtain it before registering or making a purchase. The service is not intended for children under 16.</p><p>Provide accurate registration information and keep it up to date. You are responsible for protecting your password and for activity you authorise on your account. Do not share, sell or impersonate another player’s account. Report suspected unauthorised access promptly.</p><p>Access may be restricted in some countries. Do not use false location information to bypass restrictions.</p></>,
+        <><p>BlitzGrid provides online matches, progression, rankings and virtual items. You need a compatible browser and an internet connection. Match outcomes and connection quality depend on gameplay, network conditions and service availability.</p><p>Maintenance, updates and technical failures may interrupt access. We may adjust gameplay balance, content and features. We do not guarantee uninterrupted access or a particular rank or match result. Any mandatory remedies for paid content remain available.</p></>,
+        <><p>Play fairly and respect other players. The following are prohibited:</p><ul className="list-disc pl-5 space-y-2"><li>Cheats, bots, unauthorised automation, modified clients or exploiting bugs to obtain an unfair advantage.</li><li>Manipulating rankings, currency balances, purchases or match results.</li><li>Harassment, threats, discrimination, impersonation or sharing unlawful content.</li><li>Attempting to compromise accounts, disrupt servers, probe private systems or access data without permission.</li></ul><p>We may review gameplay records and account activity to investigate abuse. Report suspected bugs or unfair enforcement to <LegalContact subject="Fair play review" />.</p></>,
+        <><p>Cyber Coins, Quantum Gems, skins and other virtual items are licensed for use within BlitzGrid. They are not money, deposits or investments, carry no cash redemption value and cannot be transferred or sold outside features expressly provided by the game.</p><p>Check the item description, currency type, quantity and price before confirming a purchase. Spending currency reduces your balance. Item availability and gameplay characteristics may change, subject to your rights concerning paid digital content.</p></>,
+        <><p>Any paid offer must identify its price and currency before you confirm it. Only use payment methods you are authorised to use. A balance update or demonstration receipt alone is not evidence that a bank payment was collected.</p><p>For duplicate charges, missing items, unauthorised transactions or cancellation requests, follow the <Link href="/refund" className="text-cyan-400 hover:underline">Refund & Cancellation Policy</Link>. These terms do not create a blanket “no refunds” rule or remove statutory consumer rights.</p></>,
+        <><p>The BlitzGrid name, game artwork, software, interface and other original materials belong to their respective rights holders. You receive a personal, limited right to use the service in accordance with these terms.</p><p>Do not redistribute, commercially exploit or copy protected materials without permission, except where the law permits it. You retain rights in content you create; submitting it to the service permits us to display and process it as necessary to provide the relevant feature.</p></>,
+        <><p>We may restrict or suspend an account where reasonably necessary to address fraud, security threats, unlawful activity or serious breaches of these terms. Where appropriate, we will explain the reason and allow you to request a review.</p><p>You may stop using the service at any time and request account closure through <LegalContact subject="Account closure request" />. Closure does not automatically refund purchases or remove records that must be retained for legal or security reasons. We will consider any outstanding purchase rights separately.</p></>,
+        <><p>You are responsible for using the service lawfully and for losses caused by your own misuse. We are responsible for providing the service with the care required by applicable law.</p><p>Nothing excludes liability for fraud, death or personal injury caused by negligence, or any other liability that cannot legally be excluded. Your mandatory consumer protections apply regardless of these terms. No particular governing jurisdiction is imposed by this page.</p></>,
+        <><p>We may revise these terms as the service develops. The date above identifies this version. Material changes affecting existing users will be communicated through an appropriate service notice; changes will not remove rights relating to an earlier purchase.</p><p>Send questions or complaints to <LegalContact subject="Terms question or complaint" />, including your username, relevant dates and a description of the issue. Do not include passwords or full card details. If an issue remains unresolved, you may use the remedies and dispute channels available in your jurisdiction.</p></>,
+    ];
 
-            <div className="h-1.5 w-full bg-gradient-to-r from-cyan-400 via-pink-500 to-amber-400 shadow-[0_0_20px_rgba(0,240,255,0.7)]"></div>
-
-            <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-                    <Link href="/" className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 p-0.5 shadow-md">
-                            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                                <Crosshair className="w-6 h-6 text-cyan-400" />
-                            </div>
-                        </div>
-                        <span className="font-display font-black text-2xl tracking-wider text-white">
-                            BLITZ<span className="text-pink-500">GRID</span>
-                        </span>
-                    </Link>
-
-                    <Link
-                        href="/register"
-                        className="px-4 py-2 bg-slate-900 border border-slate-700 hover:border-cyan-500 text-cyan-400 text-xs font-mono font-bold rounded-xl flex items-center space-x-1.5 transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        <span>BACK TO REGISTRATION</span>
-                    </Link>
-                </div>
-            </header>
-
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-1">
-                <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 sm:p-12 shadow-2xl space-y-8 backdrop-blur-xl">
-                    
-                    <div className="space-y-2 border-b border-slate-800 pb-6">
-                        <div className="inline-flex items-center space-x-2 text-xs font-mono text-cyan-400 uppercase tracking-widest">
-                            <FileText className="w-4 h-4" />
-                            <span>LEGAL DIRECTIVE // PROTOCOL 2026.1</span>
-                        </div>
-                        <h1 className="font-display text-3xl sm:text-4xl font-black text-white">
-                            TERMS & CONDITIONS
-                        </h1>
-                        <p className="text-xs font-mono text-slate-400">
-                            Effective Date: September 14, 2026 | Last Updated: 2026-09-14
-                        </p>
-                    </div>
-
-                    <div className="space-y-6 text-sm text-slate-300 leading-relaxed font-sans">
-                        <section className="space-y-3">
-                            <h2 className="font-display text-lg font-bold text-white text-cyan-400">
-                                1. Acceptance of Terms
-                            </h2>
-                            <p>
-                                By creating an account, accessing the BlitzGrid tactical gaming platform, or participating in the real-time multiplayer arena, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.
-                            </p>
-                        </section>
-
-                        <section className="space-y-3">
-                            <h2 className="font-display text-lg font-bold text-white text-cyan-400">
-                                2. Eligibility & Account Security
-                            </h2>
-                            <p>
-                                You must be at least 16 years of age or the age of majority in your jurisdiction to create an account. You agree to provide accurate and complete personal details (including valid address, phone number, and date of birth) to enable anti-fraud verification and payment processing.
-                            </p>
-                        </section>
-
-                        <section className="space-y-3">
-                            <h2 className="font-display text-lg font-bold text-white text-cyan-400">
-                                3. Prohibited Conduct & Fair Play
-                            </h2>
-                            <p>
-                                BlitzGrid uses a 30 TPS server-authoritative physics simulation. Any attempt to modify client packets, reverse-engineer server sockets, exploit latency manipulation, or deploy unauthorized bot automation is strictly prohibited and results in immediate permanent ban.
-                            </p>
-                        </section>
-
-                        <section className="space-y-3">
-                            <h2 className="font-display text-lg font-bold text-white text-cyan-400">
-                                4. Virtual Currencies & Purchases
-                            </h2>
-                            <p>
-                                Cyber Coins and Quantum Gems are virtual utility tokens used solely for in-game cosmetic customization (tank hulls, turrets, and bullet trails). Virtual items hold no real-world monetary value and cannot be transferred or exchanged outside the platform.
-                            </p>
-                        </section>
-
-                        <section className="space-y-3">
-                            <h2 className="font-display text-lg font-bold text-white text-cyan-400">
-                                5. Termination of Service
-                            </h2>
-                            <p>
-                                We reserve the right to suspend or terminate accounts that violate our security policies or fair-play directives without prior notice.
-                            </p>
-                        </section>
-                    </div>
-
-                    <div className="pt-6 border-t border-slate-800 flex justify-between items-center text-xs font-mono text-slate-500">
-                        <span>BLITZGRID COMPLIANCE DIVISION</span>
-                        <Link href="/privacy" className="text-cyan-400 hover:underline">VIEW PRIVACY POLICY</Link>
-                    </div>
-                </div>
-            </main>
-
-            <Footer />
-        </div>
-    );
+    return <LegalLayout title="Terms & Conditions" summary="The rules for your account, fair play and purchases in the BlitzGrid arena." path="/terms" sections={sections}>{sections.map((section, index) => <LegalSection key={section.id} {...section} number={index + 1}>{content[index]}</LegalSection>)}</LegalLayout>;
 }
