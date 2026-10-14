@@ -42,6 +42,24 @@ export default function Footer() {
                     <FooterLinks title="Legal" links={legal} />
                     {hasCompanyDetails && <div className="col-span-2 lg:col-span-1 min-w-0 border-t border-slate-800 pt-6 lg:pt-0 lg:border-0"><h2 className="font-mono text-xs font-bold tracking-widest uppercase text-pink-400 mb-4">Company & contact</h2><CompanyDetails /></div>}
                 </div>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 border-t border-slate-800 py-6" aria-label="Payment logos">
+                    {[
+                        ['visa', 'Visa'],
+                        ['mastercard', 'Mastercard'],
+                        ['pci-dss', 'PCI DSS'],
+                    ].map(([file, label]) => (
+                        <img
+                            key={file}
+                            src={`/images/payments/${file}.png`}
+                            alt={label}
+                            width="1024"
+                            height="566"
+                            loading="lazy"
+                            decoding="async"
+                            className="block h-auto w-20 sm:w-24 shrink-0"
+                        />
+                    ))}
+                </div>
                 <div className="border-t border-slate-800 pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs leading-relaxed text-slate-500">
                     <p>&copy; {new Date().getFullYear()} {company.name || 'BlitzGrid'}. All rights reserved.</p>
                     <p>Virtual items have no cash redemption value.</p>
